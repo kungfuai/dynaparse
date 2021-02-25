@@ -15,8 +15,8 @@ class DynamicArgumentParser(ArgumentParser):
         super().__init__(*args, **kwargs)
 
         self._dynamic_config = DynamicConfiguration()
-        self._schema_file = self._get_command_line_value_from_arg("config_schema")
-        self._values_file = self._get_command_line_value_from_arg("config_values")
+        # self._schema_file = self._get_command_line_value_from_arg("config_schema")
+        # self._values_file = self._get_command_line_value_from_arg("config_values")
 
         if self._argument_conflicts_exist():
             raise Exception(
@@ -43,7 +43,6 @@ class DynamicArgumentParser(ArgumentParser):
             default=False,
             help="If True, generate random parameters from the specified dynamic configuration.",
         )
-        self._check_for_dynamic_config()
 
     def _get_command_line_value_from_arg(self, arg):
         """Return command line value from a specific argument name."""
@@ -53,11 +52,11 @@ class DynamicArgumentParser(ArgumentParser):
                 return sys.argv[i + 1]
         return None
 
-    def _check_for_dynamic_config(self):
+    def _check_for_dynamic_config(self, args):
         """Append arguments for a dynamic configuration."""
-        if self._schema_file is not None:
-            assert os.path.isfile(self._schema_file), "Schema file not found"
-            self._dynamic_config.load_schema(self._schema_file)
+        if args.config_schema is not None:
+            assert os.path.isfile(args.config_schema), "Schema file not found"
+            self._dynamic_config.load_schema(args.config_schema)
             self._dynamic_config.append_to_arg_parser(self)
 
     def _get_existing_arg_names(self):
@@ -76,15 +75,16 @@ class DynamicArgumentParser(ArgumentParser):
         help_str += "\nNOTE: This script uses a dynamic argument parser for configuration.\nSee ..... for more information.\n"
         return help_str
 
-    def parse_args(self, *args, **kwargs):
+    def parse_args(self, *largs, **kwargs):
         """Parse all arguments including dynamic configuration-based ones."""
-        if self._values_file is not None:
-            if self._schema_file is None:
-                raise Exception("Can't specify config values without specifying schema")
-            self._dynamic_config.load_values(self._values_file)
-        self._dynamic_config.patch_sys_argv()
+        args = super().parse_args(*largs, **kwargs)
+        self._check_for_dynamic_config(args)
 
-        args = super().parse_args(*args, **kwargs)
+        if args.config_values is not None:
+            if args.config_schema is None:
+                raise Exception("Can't specify config values without specifying schema")
+            self._dynamic_config.load_values(args.config_values)
+        self._dynamic_config.patch_sys_argv()
 
         if self._dynamic_config.has_schema() and args.randomize_config:
             self._dynamic_config.overwrite_args_with_random(args)
