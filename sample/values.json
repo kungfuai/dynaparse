@@ -1,0 +1,10 @@
+{
+    "boolean_parameter_name": true,
+    "categorical_parameter_name": "option1",
+    "float_parameter_name": 1.0,
+    "list_parameter_name": [
+        0
+    ],
+    "str_parameter_name": null,
+    "int_parameter_name": 1
+}

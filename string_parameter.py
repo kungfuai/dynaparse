@@ -3,7 +3,7 @@ from dataclasses import dataclass
 
 import numpy as np
 
-from src.config.base_parameter import BaseParameter
+from base_parameter import BaseParameter
 
 
 @dataclass

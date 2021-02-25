@@ -1,7 +1,7 @@
 from argparse import ArgumentParser
 import sys
 
-from src.config.dynamic_configuration import DynamicConfiguration
+from dynamic_configuration import DynamicConfiguration
 
 
 class DynamicArgumentParser(ArgumentParser):

@@ -4,12 +4,12 @@ import json
 import os
 import sys
 
-from src.config.boolean_parameter import BooleanParameter
-from src.config.categorical_parameter import CategoricalParameter
-from src.config.float_parameter import FloatParameter
-from src.config.int_parameter import IntParameter
-from src.config.list_parameter import ListParameter
-from src.config.string_parameter import StringParameter
+from boolean_parameter import BooleanParameter
+from categorical_parameter import CategoricalParameter
+from float_parameter import FloatParameter
+from int_parameter import IntParameter
+from list_parameter import ListParameter
+from string_parameter import StringParameter
 
 
 class DynamicConfiguration:

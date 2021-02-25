@@ -2,7 +2,7 @@ import random
 from dataclasses import dataclass
 from typing import List
 
-from src.config.base_parameter import BaseParameter
+from base_parameter import BaseParameter
 
 
 @dataclass
