@@ -1,0 +1,8 @@
+dataclasses_json
+dataclasses_jsonschema
+jsonargparse
+typeguard
+numpy
+# for dev
+black
+pytest

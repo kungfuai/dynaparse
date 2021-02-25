@@ -1,5 +1,6 @@
 from argparse import ArgumentParser
 import sys
+import os
 
 from dynamic_configuration import DynamicConfiguration
 
@@ -26,11 +27,12 @@ class DynamicArgumentParser(ArgumentParser):
         self.add_argument(
             "--config_schema",
             type=str,
-            default=None,
+            default="sample/schema.json",
             help="Dynamic configuration schema file specifying variable named arguments",
         )
         self.add_argument(
             "--config_values",
+            "--config",
             type=str,
             default=None,
             help="File specifying values following the schema in 'config_schema'. These will override command line args if specified.",
@@ -54,6 +56,7 @@ class DynamicArgumentParser(ArgumentParser):
     def _check_for_dynamic_config(self):
         """Append arguments for a dynamic configuration."""
         if self._schema_file is not None:
+            assert os.path.isfile(self._schema_file), "Schema file not found"
             self._dynamic_config.load_schema(self._schema_file)
             self._dynamic_config.append_to_arg_parser(self)
 
@@ -73,7 +76,7 @@ class DynamicArgumentParser(ArgumentParser):
         help_str += "\nNOTE: This script uses a dynamic argument parser for configuration.\nSee ..... for more information.\n"
         return help_str
 
-    def parse_args(self):
+    def parse_args(self, *args, **kwargs):
         """Parse all arguments including dynamic configuration-based ones."""
         if self._values_file is not None:
             if self._schema_file is None:
@@ -81,7 +84,7 @@ class DynamicArgumentParser(ArgumentParser):
             self._dynamic_config.load_values(self._values_file)
         self._dynamic_config.patch_sys_argv()
 
-        args = super().parse_args()
+        args = super().parse_args(*args, **kwargs)
 
         if self._dynamic_config.has_schema() and args.randomize_config:
             self._dynamic_config.overwrite_args_with_random(args)
