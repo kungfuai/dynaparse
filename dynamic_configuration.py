@@ -26,7 +26,7 @@ class DynamicConfiguration:
 
     def has_schema(self):
         """Return whether schema are loaded."""
-        return self.schema_file is not None
+        return self.schema_file is not None and self._schema
 
     def get_values(self, random=False, fill_defaults=True):
         """Get a dictionary of currently configured values, filling in defaults if required."""

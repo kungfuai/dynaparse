@@ -2,6 +2,7 @@ import os
 import sys
 import pytest
 from dynamic_argument_parser import DynamicArgumentParser
+from config import ExperimentConfig
 
 
 def test_parser_can_parse_from_json():
@@ -17,14 +18,22 @@ def test_parser_can_parse_from_json():
     assert args.str_parameter_1 == "None"
 
 
-@pytest.mark.skip(reason="Not implemented")
+@pytest.mark.skip(reason="Test is not implemented")
+def test_parser_can_parse_from_json_using_a_different_config_schema():
+    pass
+
+
 def test_parser_can_parse_a_nested_config():
     cli_args = [
         "--config_schema",
         "nested",
         "--config_values",
-        "sample/values.json",
+        "sample/nested_config_values.json",
     ]
     parser = DynamicArgumentParser()
     args = parser.parse_args(cli_args)
-    assert args.config.train.data.paths == ["data/01*.csv", "data/02*.csv"]
+    config = ExperimentConfig.from_args(args)
+    print(config)
+    assert config.training.data.paths == ["data/00*.csv", "data/01*.csv"]
+    assert config.model.type == "boosted_tree"
+    assert config.model.parameters["learning_rate"] == 0.01

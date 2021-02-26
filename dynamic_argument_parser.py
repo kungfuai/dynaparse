@@ -55,9 +55,12 @@ class DynamicArgumentParser(ArgumentParser):
     def _check_for_dynamic_config(self, args):
         """Append arguments for a dynamic configuration."""
         if args.config_schema is not None:
-            assert os.path.isfile(args.config_schema), "Schema file not found"
-            self._dynamic_config.load_schema(args.config_schema)
-            self._dynamic_config.append_to_arg_parser(self)
+            if args.config_schema == "nested":
+                pass
+            else:
+                assert os.path.isfile(args.config_schema), "Schema file not found"
+                self._dynamic_config.load_schema(args.config_schema)
+                self._dynamic_config.append_to_arg_parser(self)
 
     def _get_existing_arg_names(self):
         """Get names of arguments loaded as actions."""
@@ -79,11 +82,14 @@ class DynamicArgumentParser(ArgumentParser):
         """Parse all arguments including dynamic configuration-based ones."""
         args = super().parse_args(*largs, **kwargs)
         self._check_for_dynamic_config(args)
+        if not self._dynamic_config.has_schema():
+            return args
 
         if args.config_values is not None:
             if args.config_schema is None:
                 raise Exception("Can't specify config values without specifying schema")
             self._dynamic_config.load_values(args.config_values)
+        # TODO: any alternative to patching sys.argv? (can cause surprises downstream)
         self._dynamic_config.patch_sys_argv()
 
         if self._dynamic_config.has_schema() and args.randomize_config:
