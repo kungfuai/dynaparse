@@ -20,10 +20,11 @@ def test_parser_can_parse_from_json():
 
 @pytest.mark.skip(reason="Test is not implemented")
 def test_parser_can_parse_from_json_using_a_different_config_schema():
+    # TODO: impl
     pass
 
 
-def test_parser_can_parse_a_nested_config():
+def test_parser_can_create_a_nested_config():
     cli_args = [
         "--config_schema",
         "nested",
@@ -37,3 +38,9 @@ def test_parser_can_parse_a_nested_config():
     assert config.training.data.paths == ["data/00*.csv", "data/01*.csv"]
     assert config.model.type == "boosted_tree"
     assert config.model.parameters["learning_rate"] == 0.01
+
+
+@pytest.mark.skip(reason="Test is not implemented")
+def test_parser_can_create_a_nested_config_and_override_its_values_using_args():
+    # TODO: impl
+    pass
