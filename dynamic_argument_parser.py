@@ -1,8 +1,10 @@
 from argparse import ArgumentParser
 import sys
 import os
+import json
 
 from dynamic_configuration import DynamicConfiguration
+from config import ExperimentConfig
 
 
 class DynamicArgumentParser(ArgumentParser):
@@ -10,11 +12,12 @@ class DynamicArgumentParser(ArgumentParser):
 
     _RESERVED_ARGS = ["config_schema", "config_values", "randomize_config"]
 
-    def __init__(self, *args, **kwargs):
+    def __init__(self, schema_class=ExperimentConfig, *args, **kwargs):
         """Initialize new arg parser with dynamic args taken into account."""
         super().__init__(*args, **kwargs)
 
         self._dynamic_config = DynamicConfiguration()
+        self._schema_class = schema_class
         # self._schema_file = self._get_command_line_value_from_arg("config_schema")
         # self._values_file = self._get_command_line_value_from_arg("config_values")
 
@@ -24,12 +27,6 @@ class DynamicArgumentParser(ArgumentParser):
                 % (self._RESERVED_ARGS)
             )
 
-        self.add_argument(
-            "--config_schema",
-            type=str,
-            default="sample/schema.json",
-            help="Dynamic configuration schema file specifying variable named arguments",
-        )
         self.add_argument(
             "--config_values",
             "--config",
@@ -42,6 +39,16 @@ class DynamicArgumentParser(ArgumentParser):
             action="store_true",
             default=False,
             help="If True, generate random parameters from the specified dynamic configuration.",
+        )
+        self.add_argument(
+            "--config_schema",
+            type=str,
+            default="sample/schema.json",
+            help=(
+                "Dynamic configuration schema file specifying variable named arguments. "
+                "It can be a path to a json file, or a string value 'nested'. If it is 'nested', "
+                f"then {self._schema_class} is used to define the schema."
+            ),
         )
 
     def _get_command_line_value_from_arg(self, arg):
@@ -75,6 +82,50 @@ class DynamicArgumentParser(ArgumentParser):
     def format_help(self):
         """Format help as usual, but append note about dynamic argument parser."""
         help_str = super().format_help()
+        help_str += "\n*****\n"
+        help_str += f"\nSchema defined by {self._schema_class}:\n"
+        help_str += (
+            f"{json.dumps(self._schema_class.__pydantic_model__.schema(), indent=2)}"
+        )
+        help_str += "\n*****\n\nAn example config file:"
+        help_str += """
+        {
+            "model": {
+                "type": "boosted_tree",
+                "parameters": {
+                    "max_depth": 5,
+                    "max_leaves": 31,
+                    "bagging_fraction": 0.5,
+                    "eta": 0.03,
+                    "learning_rate": 0.01
+                }
+            },
+            "training": {
+                "data": {
+                    "paths": [
+                        "data/00*.csv",
+                        "data/01*.csv"
+                    ],
+                    "augmentation": [
+                        {
+                            "method": "fillna",
+                            "column": "x",
+                            "kwargs": {
+                                "value": -1
+                            }
+                        }
+                    ]
+                }
+            },
+            "evaluation": {
+                "data": {
+                    "paths": [
+                        "data/05*.csv"
+                    ]
+                }
+            }
+        }
+        """
         help_str += "\nNOTE: This script uses a dynamic argument parser for configuration.\nSee ..... for more information.\n"
         return help_str
 
@@ -89,7 +140,7 @@ class DynamicArgumentParser(ArgumentParser):
             if args.config_schema is None:
                 raise Exception("Can't specify config values without specifying schema")
             self._dynamic_config.load_values(args.config_values)
-        # TODO: any alternative to patching sys.argv? (can cause surprises downstream)
+
         self._dynamic_config.patch_sys_argv()
 
         if self._dynamic_config.has_schema() and args.randomize_config:

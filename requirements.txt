@@ -3,6 +3,7 @@ dataclasses_jsonschema
 jsonargparse
 typeguard
 numpy
+pydantic
 # for dev
 black
 pytest

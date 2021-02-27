@@ -1,12 +1,14 @@
-from dataclasses import dataclass
 from typing import List, Dict
 from dataclasses_json import dataclass_json
 from dataclasses_jsonschema import JsonSchemaMixin
-from dataclasses import dataclass, is_dataclass
 from argparse import Namespace
-from dataclass_nested import dataclass_nested
+import dataclasses as dc
+from pydantic.dataclasses import dataclass
 import os
 import json
+
+from int_parameter import IntParameter
+from float_parameter import FloatParameter
 
 
 @dataclass_json
@@ -37,32 +39,54 @@ class ModelConfig:
     parameters: Dict
 
 
-@dataclass_nested
+@dataclass
 class DataConfig:
     @dataclass
     class AugmentationConfig:
-        method: str
-        kwargs: Dict
+        method: str = None
+        kwargs: Dict = dc.field(default_factory=lambda _: {})
         column: str = None  # For tabular data only.
 
     paths: List[str] = None
     augmentation: List[AugmentationConfig] = None
 
 
-@dataclass_nested
+@dataclass
 class TrainingConfig:
     data: DataConfig = None
-    epochs: int = 10
-    learning_rate: float = 1e-3
+    epochs: int = dc.field(
+        # TODO: implement __repr__ or __str__ of the sample() method to display
+        #   useful help information, including low, high, distribution.
+        default_factory=IntParameter(
+            default=10,
+            low=5,
+            high=100,
+            distribution="uniform",
+            name="",
+            help="",
+            required=True,
+        ).sample
+    )
+    learning_rate: float = dc.field(
+        default_factory=FloatParameter(
+            default=0.001,
+            low=1e-6,
+            high=0.01,
+            distribution="uniform",
+            name="",
+            help="",
+            required=True,
+        ).sample
+    )
 
 
-@dataclass_nested
+@dataclass
 class EvaluationConfig:
     data: DataConfig = None
 
 
 # @dataclass_json
-@dataclass_nested
+@dataclass
 class ExperimentConfig:
     model: ModelConfig
     training: TrainingConfig

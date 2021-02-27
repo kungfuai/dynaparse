@@ -34,7 +34,9 @@ def test_parser_can_create_a_nested_config():
     parser = DynamicArgumentParser()
     args = parser.parse_args(cli_args)
     config = ExperimentConfig.from_args(args)
-    print(config)
+    # print(config)
+    # print(ExperimentConfig.__pydantic_model__.schema())
+    # assert False
     assert config.training.data.paths == ["data/00*.csv", "data/01*.csv"]
     assert config.model.type == "boosted_tree"
     assert config.model.parameters["learning_rate"] == 0.01
