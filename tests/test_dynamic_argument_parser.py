@@ -46,3 +46,8 @@ def test_parser_can_create_a_nested_config():
 def test_parser_can_create_a_nested_config_and_override_its_values_using_args():
     # TODO: impl
     pass
+
+
+def test_parser_prints_out_example_nested_config():
+    help_msg = DynamicArgumentParser().format_help()
+    assert "An example config file:" in help_msg
