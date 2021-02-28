@@ -34,9 +34,14 @@ class Config(JsonSchemaMixin):
 
 
 @dataclass
+class NestedConfig:
+    pass
+
+
+@dataclass
 class ModelConfig:
-    type: str
-    parameters: Dict
+    type: str = "boosted_tree"
+    parameters: Dict = dc.field(default_factory=dict)
 
 
 @dataclass
@@ -89,8 +94,8 @@ class EvaluationConfig:
 @dataclass
 class ExperimentConfig:
     model: ModelConfig
-    training: TrainingConfig
-    evaluation: EvaluationConfig
+    training: TrainingConfig = None
+    evaluation: EvaluationConfig = None
 
     @classmethod
     def from_args(cls, args: Namespace):
