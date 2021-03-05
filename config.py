@@ -11,33 +11,6 @@ from int_parameter import IntParameter
 from float_parameter import FloatParameter
 
 
-@dataclass_json
-@dataclass
-class Config(JsonSchemaMixin):
-    """testing"""
-
-    train_split_proportion: float
-    conv_activation: str
-    conv_padding: str
-    dense_inter_size: int
-    max_pool_filter_size: int
-    in_shape: List[int]
-    max_num_signatures_per_grab: int
-    grab_label_file: str
-    length: int
-    signal_prop: float
-    signal_nonconflation_prop: float
-    val_signal_nonconflation_prop: float
-    kernel_sizes: List[int]
-    filter_sizes: List[int]
-    network: str = "test"
-
-
-@dataclass
-class NestedConfig:
-    pass
-
-
 @dataclass
 class ModelConfig:
     type: str = "boosted_tree"
@@ -90,7 +63,6 @@ class EvaluationConfig:
     data: DataConfig = None
 
 
-# @dataclass_json
 @dataclass
 class ExperimentConfig:
     model: ModelConfig
@@ -100,6 +72,10 @@ class ExperimentConfig:
     @classmethod
     def from_args(cls, args: Namespace):
         config_file_path = args.config_values
+        return cls.from_file(config_file_path)
+
+    @classmethod
+    def from_file(cls, config_file_path):
         if not os.path.isfile(config_file_path):
             raise IOError(f"Config file not found: {config_file_path}")
         config_dict = json.load(open(config_file_path))
