@@ -4,6 +4,7 @@ import json
 import os
 import sys
 
+from schema_parser import SchemaParser
 from boolean_parameter import BooleanParameter
 from categorical_parameter import CategoricalParameter
 from float_parameter import FloatParameter
@@ -78,21 +79,18 @@ class DynamicConfiguration:
     def save_schema(self, schema_file):
         """Save schema to a directory."""
         self.schema_file = schema_file
-        raw_schema = [self._schema[k].to_dict() for k in self._schema]
+        expanded = SchemaParser.expand_flat_schema_dict(self._raw_schema)
         with open(schema_file, "w") as fd:
-            json.dump(raw_schema, fd, indent=4)
+            json.dump(expanded, fd, indent=4)
 
     def load_schema(self, schema_file):
         """Load schema from a directory."""
         self.schema_file = schema_file
-        self._schema = OrderedDict()
-        with open(self.schema_file, "r") as fd:
-            raw_schema = json.load(fd)
+        self._raw_schema = SchemaParser.load_flat_schema(schema_file)
+        for parameter_name, parameter_dict in self._raw_schema.items():
+            self._append_parameter_from_dict(parameter_name, parameter_dict)
 
-        for parameter in raw_schema:
-            self._append_parameter_from_dict(parameter)
-
-    def _append_parameter_from_dict(self, parameter_dict):
+    def _append_parameter_from_dict(self, parameter_name, parameter_dict):
         """Append a parameter to the schema dictionary."""
         if parameter_dict["parameter_type"] == "int":
             initializer = IntParameter
@@ -110,7 +108,7 @@ class DynamicConfiguration:
             raise Exception(
                 "Unrecognized parameter type '%s'" % (parameter_dict["parameter_type"])
             )
-        self._schema[parameter_dict["name"]] = initializer(**parameter_dict)
+        self._schema[parameter_name] = initializer(**parameter_dict)
 
     def append_to_arg_parser(self, arg_parser):
         """Append arguments to an existing argparser."""
