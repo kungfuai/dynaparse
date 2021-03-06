@@ -6,10 +6,10 @@
             "max_leaves": 31,
             "bagging_fraction": 0.5,
             "eta": 0.03,
-            "learning_rate": 0.01
+            "lr": 0.01
         }
     },
-    "training": {
+    "train": {
         "data": {
             "paths": [
                 "data/00*.csv",
@@ -26,7 +26,7 @@
             ]
         }
     },
-    "evaluation": {
+    "eval": {
         "data": {
             "paths": [
                 "data/05*.csv"

@@ -19,8 +19,8 @@
     "help": "Float parameter help string.",
     "required": true,
     "default": 1.0,
-    "low": 0.5,
-    "high": 1.5,
+    "p1": 0.5,
+    "p2": 1.5,
     "distribution": "uniform",
     "parameter_type": "float"
   },
@@ -46,8 +46,8 @@
         "help": "Int parameter help string.",
         "required": true,
         "default": 1,
-        "low": 0,
-        "high": 1,
+        "p1": 0,
+        "p2": 1,
         "distribution": "uniform",
         "parameter_type": "int"
       }
