@@ -1,0 +1,10 @@
+{
+  "boolean_parameter_1": true,
+  "categorical_parameter_1": "option1",
+  "float_parameter_1": 1.0,
+  "list_parameter_1": [0],
+  "loss": {
+    "str_parameter_1": null,
+    "int_parameter_1": 1
+  }
+}

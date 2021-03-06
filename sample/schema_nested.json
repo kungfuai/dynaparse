@@ -1,0 +1,56 @@
+[
+  {
+    "name": "boolean_parameter_1",
+    "help": "Boolean parameter help string.",
+    "required": true,
+    "default": true,
+    "parameter_type": "bool"
+  },
+  {
+    "name": "categorical_parameter_1",
+    "help": "Categorical parameter help string.",
+    "required": true,
+    "default": "option1",
+    "options": ["option1", "option2", "option3"],
+    "parameter_type": "categorical"
+  },
+  {
+    "name": "float_parameter_1",
+    "help": "Float parameter help string.",
+    "required": true,
+    "default": 1.0,
+    "low": 0.5,
+    "high": 1.5,
+    "distribution": "uniform",
+    "parameter_type": "float"
+  },
+  {
+    "name": "list_parameter_1",
+    "help": "List parameter help string (casts as int in this example).",
+    "required": true,
+    "default": [0],
+    "parameter_type": "list",
+    "value_type": "int"
+  },
+  {
+    "loss": [
+      {
+        "name": "str_parameter_1",
+        "help": "String parameter help string.",
+        "required": true,
+        "default": null,
+        "parameter_type": "str"
+      },
+      {
+        "name": "int_parameter_1",
+        "help": "Int parameter help string.",
+        "required": true,
+        "default": 1,
+        "low": 0,
+        "high": 1,
+        "distribution": "uniform",
+        "parameter_type": "int"
+      }
+    ]
+  }
+]

@@ -4,7 +4,7 @@ import json
 import os
 import sys
 
-from schema_parser import SchemaParser
+from configuration_file_parser import ConfigurationFileParser
 from boolean_parameter import BooleanParameter
 from categorical_parameter import CategoricalParameter
 from float_parameter import FloatParameter
@@ -23,13 +23,13 @@ class DynamicConfiguration:
         if self.schema_file is not None:
             self.load_schema(self.schema_file)
         if self.values_file is not None:
-            self.load_file(values_file)
+            self.load_values(values_file)
 
     def has_schema(self):
         """Return whether schema are loaded."""
         return self.schema_file is not None and self._schema
 
-    def get_values(self, random=False, fill_defaults=True):
+    def get_values(self, random=False, fill_defaults=True, expand=False):
         """Get a dictionary of currently configured values, filling in defaults if required."""
         to_return = {}
         for name in self._schema:
@@ -41,7 +41,11 @@ class DynamicConfiguration:
                 to_return[name] = self._values[name]
             elif fill_defaults:
                 to_return[name] = self._schema[name].get_default()
-        return to_return
+        return (
+            to_return
+            if expand is False
+            else ConfigurationFileParser.expand_flat_values(to_return)
+        )
 
     def get_values_as_str(self, random=False, fill_defaults=True):
         """Cast values as strings."""
@@ -62,31 +66,29 @@ class DynamicConfiguration:
 
     def load_values(self, filename):
         """Load values and schema from a given filename."""
-        with open(filename, "r") as fd:
-            raw_data = json.load(fd)
-        print(raw_data)
+        raw_data = ConfigurationFileParser.load_flat_values(filename)
         for value_name, value in raw_data.items():
             self.set_value(value_name, value)
 
     def save_values(self, filename):
         """Save configuration values to a file."""
         with open(filename, "w") as fd:
-            to_write = (
-                self._values if len(self._values) > 0 else self.get_values(random=False)
+            raw_values_dict = self.get_values(random=False)
+            json.dump(
+                ConfigurationFileParser.expand_flat_values(to_write), fd, indent=4
             )
-            json.dump(to_write, fd, indent=4)
 
     def save_schema(self, schema_file):
         """Save schema to a directory."""
         self.schema_file = schema_file
-        expanded = SchemaParser.expand_flat_schema_dict(self._raw_schema)
+        expanded = ConfigurationFileParser.expand_flat_schema(self._raw_schema)
         with open(schema_file, "w") as fd:
             json.dump(expanded, fd, indent=4)
 
     def load_schema(self, schema_file):
         """Load schema from a directory."""
         self.schema_file = schema_file
-        self._raw_schema = SchemaParser.load_flat_schema(schema_file)
+        self._raw_schema = ConfigurationFileParser.load_flat_schema(schema_file)
         for parameter_name, parameter_dict in self._raw_schema.items():
             self._append_parameter_from_dict(parameter_name, parameter_dict)
 
