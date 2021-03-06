@@ -1,10 +1,8 @@
 from argparse import ArgumentParser
 import sys
-import os
-import json
+from types import SimpleNamespace
 
 from dynamic_configuration import DynamicConfiguration
-from config import ExperimentConfig
 
 
 class DynamicArgumentParser(ArgumentParser):
@@ -12,14 +10,13 @@ class DynamicArgumentParser(ArgumentParser):
 
     _RESERVED_ARGS = ["config_schema", "config_values", "randomize_config"]
 
-    def __init__(self, schema_class=ExperimentConfig, *args, **kwargs):
+    def __init__(self, *args, **kwargs):
         """Initialize new arg parser with dynamic args taken into account."""
         super().__init__(*args, **kwargs)
 
         self._dynamic_config = DynamicConfiguration()
-        self._schema_class = schema_class
-        # self._schema_file = self._get_command_line_value_from_arg("config_schema")
-        # self._values_file = self._get_command_line_value_from_arg("config_values")
+        self._schema_file = self._get_command_line_value_from_arg("config_schema")
+        self._values_file = self._get_command_line_value_from_arg("config_values")
 
         if self._argument_conflicts_exist():
             raise Exception(
@@ -28,8 +25,13 @@ class DynamicArgumentParser(ArgumentParser):
             )
 
         self.add_argument(
+            "--config_schema",
+            type=str,
+            default=None,
+            help="Dynamic configuration schema file specifying variable named arguments",
+        )
+        self.add_argument(
             "--config_values",
-            "--config",
             type=str,
             default=None,
             help="File specifying values following the schema in 'config_schema'. These will override command line args if specified.",
@@ -40,16 +42,7 @@ class DynamicArgumentParser(ArgumentParser):
             default=False,
             help="If True, generate random parameters from the specified dynamic configuration.",
         )
-        self.add_argument(
-            "--config_schema",
-            type=str,
-            default="sample/schema.json",
-            help=(
-                "Dynamic configuration schema file specifying variable named arguments. "
-                "It can be a path to a json file, or a string value 'nested'. If it is 'nested', "
-                f"then {self._schema_class} is used to define the schema."
-            ),
-        )
+        self._check_for_dynamic_config()
 
     def _get_command_line_value_from_arg(self, arg):
         """Return command line value from a specific argument name."""
@@ -59,15 +52,11 @@ class DynamicArgumentParser(ArgumentParser):
                 return sys.argv[i + 1]
         return None
 
-    def _check_for_dynamic_config(self, args):
+    def _check_for_dynamic_config(self):
         """Append arguments for a dynamic configuration."""
-        if args.config_schema is not None:
-            if args.config_schema == "nested":
-                pass
-            else:
-                assert os.path.isfile(args.config_schema), "Schema file not found"
-                self._dynamic_config.load_schema(args.config_schema)
-                self._dynamic_config.append_to_arg_parser(self)
+        if self._schema_file is not None:
+            self._dynamic_config.load_schema(self._schema_file)
+            self._dynamic_config.append_to_arg_parser(self)
 
     def _get_existing_arg_names(self):
         """Get names of arguments loaded as actions."""
@@ -82,66 +71,45 @@ class DynamicArgumentParser(ArgumentParser):
     def format_help(self):
         """Format help as usual, but append note about dynamic argument parser."""
         help_str = super().format_help()
-        help_str += "\n*****\n"
-        help_str += f"\nSchema defined by {self._schema_class}:\n"
-        help_str += (
-            f"{json.dumps(self._schema_class.__pydantic_model__.schema(), indent=2)}"
-        )
-        help_str += "\n*****\n\nAn example config file:"
-        help_str += """
-        {
-            "model": {
-                "type": "boosted_tree",
-                "parameters": {
-                    "max_depth": 5,
-                    "max_leaves": 31,
-                    "bagging_fraction": 0.5,
-                    "eta": 0.03,
-                    "learning_rate": 0.01
-                }
-            },
-            "training": {
-                "data": {
-                    "paths": [
-                        "data/00*.csv",
-                        "data/01*.csv"
-                    ],
-                    "augmentation": [
-                        {
-                            "method": "fillna",
-                            "column": "x",
-                            "kwargs": {
-                                "value": -1
-                            }
-                        }
-                    ]
-                }
-            },
-            "evaluation": {
-                "data": {
-                    "paths": [
-                        "data/05*.csv"
-                    ]
-                }
-            }
-        }
-        """
         help_str += "\nNOTE: This script uses a dynamic argument parser for configuration.\nSee ..... for more information.\n"
         return help_str
 
-    def parse_args(self, *largs, **kwargs):
+    def _patch_kwargs(self, args):
+        """Patch kwargs in an argparse namespace so that nested values are accessible via dot notation."""
+        kwargs = args._get_kwargs()
+
+        def assign(parent_obj, parent_names, arg_name, arg_value):
+            if len(parent_names) > 0:
+                if parent_names[0] not in dir(parent_obj):
+                    setattr(parent_obj, parent_names[0], SimpleNamespace())
+                curr_parent = parent_names.pop(0)
+                assign(
+                    getattr(parent_obj, curr_parent), parent_names, arg_name, arg_value
+                )
+            else:
+                setattr(parent_obj, arg_name, arg_value)
+                return
+
+        for arg in kwargs:
+            arg_full_name = arg[0]
+            if "." in arg_full_name:
+                arg_value = arg[1]
+                parent_names = arg_full_name.split(".")[:-1]
+                arg_name = arg_full_name.split(".")[-1]
+                assign(args, parent_names, arg_name, arg_value)
+                delattr(args, arg_full_name)
+
+        return args
+
+    def parse_args(self):
         """Parse all arguments including dynamic configuration-based ones."""
-        args = super().parse_args(*largs, **kwargs)
-        self._check_for_dynamic_config(args)
-        if not self._dynamic_config.has_schema():
-            return args
-
-        if args.config_values is not None:
-            if args.config_schema is None:
+        if self._values_file is not None:
+            if self._schema_file is None:
                 raise Exception("Can't specify config values without specifying schema")
-            self._dynamic_config.load_values(args.config_values)
-
+            self._dynamic_config.load_values(self._values_file)
         self._dynamic_config.patch_sys_argv()
+
+        args = super().parse_args()
 
         if self._dynamic_config.has_schema() and args.randomize_config:
             self._dynamic_config.overwrite_args_with_random(args)
@@ -149,4 +117,4 @@ class DynamicArgumentParser(ArgumentParser):
         if args.config_values is not None:
             self._dynamic_config.overwrite_args_with_contents(args)
 
-        return args
+        return self._patch_kwargs(args)
