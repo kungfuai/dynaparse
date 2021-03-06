@@ -1,2 +1,2 @@
 #!/bin/bash
-python -m example.py --config_schema sample/schema.json --help
+python example.py --config_schema sample/schema_nested.json --help

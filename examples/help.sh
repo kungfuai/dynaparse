@@ -1,2 +1,2 @@
 #!/bin/bash
-python -m example.py --help
+python example.py --help

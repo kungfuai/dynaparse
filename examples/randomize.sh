@@ -1,2 +1,2 @@
 #!/bin/bash
-python -m example.py --config_schema sample/schema.json --randomize_config
+python example.py --config_schema sample/schema_nested.json --randomize_config
