@@ -1,4 +1,3 @@
-from collections import OrderedDict
 import json
 
 
@@ -50,7 +49,7 @@ class ConfigurationFileParser:
     @classmethod
     def _flatten_nested_structure(cls, raw_dict):
         """Flatten the schema dict for argparse interoperability."""
-        flat_dict = OrderedDict()
+        flat_dict = {}
 
         def extract_flat_parameters(raw, parent_str=None):
             raw_type = cls._get_parameter_type(raw)
@@ -103,7 +102,7 @@ class ConfigurationFileParser:
     def _expand_flat_structure(cls, structure, is_schema):
         """Expand a flattened schema dict into a serializable nested dict."""
         output_list = []
-        nested_dict = OrderedDict()
+        nested_dict = {}
         for key in structure:
             if "." not in key:
                 if is_schema:

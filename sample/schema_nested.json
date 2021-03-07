@@ -28,7 +28,7 @@
     "name": "list_parameter_1",
     "help": "List parameter help string (casts as int in this example).",
     "required": true,
-    "default": [0],
+    "default": [0, 1, 2],
     "parameter_type": "list",
     "value_type": "int"
   },

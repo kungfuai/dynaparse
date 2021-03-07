@@ -19,6 +19,8 @@ class BaseParameter:
 
     def cast(self, value):
         """Cast a value type 'int'."""
+        if value is None:
+            return None
         try:
             return self.get_typefunc()(value)
         except Exception as e:

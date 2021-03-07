@@ -1,7 +1,7 @@
 import random
 from dataclasses import dataclass
 
-from base_parameter import BaseParameter
+from parameters.base_parameter import BaseParameter
 
 
 @dataclass

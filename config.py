@@ -7,8 +7,8 @@ from pydantic.dataclasses import dataclass
 import os
 import json
 
-from int_parameter import IntParameter
-from float_parameter import FloatParameter
+from parameters.int_parameter import IntParameter
+from parameters.float_parameter import FloatParameter
 
 
 @dataclass

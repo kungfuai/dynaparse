@@ -1,16 +1,15 @@
 from argparse import _StoreAction
-from collections import OrderedDict
 import json
 import os
 import sys
 
-from configuration_file_parser import ConfigurationFileParser
-from boolean_parameter import BooleanParameter
-from categorical_parameter import CategoricalParameter
-from float_parameter import FloatParameter
-from int_parameter import IntParameter
-from list_parameter import ListParameter
-from string_parameter import StringParameter
+from parsers.configuration_file_parser import ConfigurationFileParser
+from parameters.boolean_parameter import BooleanParameter
+from parameters.categorical_parameter import CategoricalParameter
+from parameters.float_parameter import FloatParameter
+from parameters.int_parameter import IntParameter
+from parameters.list_parameter import ListParameter
+from parameters.string_parameter import StringParameter
 
 
 class DynamicConfiguration:
@@ -18,8 +17,8 @@ class DynamicConfiguration:
         """Instantiate new dynamic configuration object."""
         self.values_file = values_file
         self.schema_file = schema_file
-        self._schema = OrderedDict()
-        self._values = OrderedDict()
+        self._schema = {}
+        self._values = {}
         if self.schema_file is not None:
             self.load_schema(self.schema_file)
         if self.values_file is not None:
