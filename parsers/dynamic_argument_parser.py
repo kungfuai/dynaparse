@@ -56,7 +56,10 @@ class DynamicArgumentParser(ArgumentParser):
         """Append arguments for a dynamic configuration."""
         if self._schema_file is not None:
             self._dynamic_config.load_schema(self._schema_file)
-            self._dynamic_config.append_to_arg_parser(self)
+        if self._values_file is not None:
+            self._dynamic_config.load_values(self._values_file)
+        self._dynamic_config.append_to_arg_parser(self)
+        self._dynamic_config.patch_sys_argv()
 
     def _get_existing_arg_names(self):
         """Get names of arguments loaded as actions."""
@@ -71,7 +74,7 @@ class DynamicArgumentParser(ArgumentParser):
     def format_help(self):
         """Format help as usual, but append note about dynamic argument parser."""
         help_str = super().format_help()
-        help_str += "\nNOTE: This script uses a dynamic argument parser for configuration.\nSee ..... for more information.\n"
+        help_str += "\nNOTE: This script uses a dynamic argument parser for configuration.\nSee https://github.com/kungfuai/dynaparse for more information.\n"
         return help_str
 
     def _patch_kwargs(self, args):
@@ -103,12 +106,6 @@ class DynamicArgumentParser(ArgumentParser):
 
     def parse_args(self):
         """Parse all arguments including dynamic configuration-based ones."""
-        if self._values_file is not None:
-            if self._schema_file is None:
-                raise Exception("Can't specify config values without specifying schema")
-            self._dynamic_config.load_values(self._values_file)
-        self._dynamic_config.patch_sys_argv()
-
         args = super().parse_args()
 
         if self._dynamic_config.has_schema() and args.randomize_config:
