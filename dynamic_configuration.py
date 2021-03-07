@@ -2,6 +2,7 @@ from argparse import _StoreAction
 import json
 import os
 import sys
+import warnings
 
 from parsers.configuration_file_parser import ConfigurationFileParser
 from parameters.boolean_parameter import BooleanParameter
@@ -10,6 +11,7 @@ from parameters.float_parameter import FloatParameter
 from parameters.int_parameter import IntParameter
 from parameters.list_parameter import ListParameter
 from parameters.string_parameter import StringParameter
+from util.schema_builder import SchemaBuilder
 
 
 class DynamicConfiguration:
@@ -66,6 +68,13 @@ class DynamicConfiguration:
     def load_values(self, filename):
         """Load values and schema from a given filename."""
         raw_data = ConfigurationFileParser.load_flat_values(filename)
+        if self.schema_file is None:
+            warnings.warn(
+                "No schema file specified, inferring schema from '%s'" % (filename)
+            )
+            self._raw_schema = SchemaBuilder.infer_from_values_file(filename)
+            for parameter_name, parameter_dict in self._raw_schema.items():
+                self._append_parameter_from_dict(parameter_name, parameter_dict)
         for value_name, value in raw_data.items():
             self.set_value(value_name, value)
 
