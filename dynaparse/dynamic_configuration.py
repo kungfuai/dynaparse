@@ -15,16 +15,16 @@ from dynaparse.util.schema_builder import SchemaBuilder
 
 
 class DynamicConfiguration:
-    def __init__(self, values_file=None, schema_file=None):
+    def __init__(self, values=None, schema=None):
         """Instantiate new dynamic configuration object."""
-        self.values_file = values_file
-        self.schema_file = schema_file
+        self.values_file = values
+        self.schema_file = schema
         self._schema = {}
         self._values = {}
         if self.schema_file is not None:
             self.load_schema(self.schema_file)
         if self.values_file is not None:
-            self.load_values(values_file)
+            self.load_values(self.values_file)
 
     def has_schema(self):
         """Return whether schema are loaded."""
