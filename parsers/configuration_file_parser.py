@@ -81,19 +81,22 @@ class ConfigurationFileParser:
         return flat_dict
 
     @classmethod
-    def _assign_nested_value_by_keys(cls, output_dict, parent_keys, value):
+    def _assign_nested_value_by_keys(cls, output_dict, parent_keys, value, is_schema):
         """Assign a value into a nested dict, creating keys as necessary."""
 
         def assign(curr_dict, remaining_keys):
             key = remaining_keys[0]
             if len(remaining_keys) == 1:
-                if key not in curr_dict:
-                    curr_dict[key] = []
-                curr_dict[key].append(value)
+                if is_schema:
+                    if key not in curr_dict:
+                        curr_dict[key] = []
+                    curr_dict[key].append(value)
+                else:
+                    curr_dict[key] = value
                 return
             else:
                 if key not in curr_dict:
-                    curr_dict[key] = OrderedDict()
+                    curr_dict[key] = {}
                 assign(curr_dict[key], remaining_keys[1:])
 
         assign(output_dict, parent_keys)
@@ -110,9 +113,9 @@ class ConfigurationFileParser:
                 else:
                     nested_dict[key] = structure[key]
             else:
-                parent_keys = key.split(".")[:-1]
+                parent_keys = key.split(".")
                 cls._assign_nested_value_by_keys(
-                    nested_dict, parent_keys, structure[key]
+                    nested_dict, parent_keys, structure[key], is_schema
                 )
         output_list.append(nested_dict)
         return output_list if is_schema else nested_dict
