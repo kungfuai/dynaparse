@@ -3,28 +3,28 @@ import json
 
 class ConfigurationFileParser:
     @classmethod
-    def load_flat_schema(cls, schema_file):
-        """Return the flattened schema dict from JSON file."""
-        with open(schema_file, "r") as fd:
-            raw_schema = json.load(fd)
-        return cls._flatten_nested_structure(raw_schema)
+    def load_flat_metaconfig(cls, filename):
+        """Return the flattened metaconfig dict from JSON file."""
+        with open(filename, "r") as fd:
+            raw = json.load(fd)
+        return cls._flatten_nested_structure(raw)
 
     @classmethod
-    def load_flat_values(cls, values_file):
-        """Return flattened values dict from JSON file."""
-        with open(values_file, "r") as fd:
-            raw_values = json.load(fd)
-        return cls._flatten_nested_structure(raw_values)
+    def load_flat_config(cls, filename):
+        """Return flattened config dict from JSON file."""
+        with open(filename, "r") as fd:
+            raw = json.load(fd)
+        return cls._flatten_nested_structure(raw)
 
     @classmethod
-    def expand_flat_schema(cls, schema_dict):
-        """Expand a flattened schema dict."""
-        return cls._expand_flat_structure(schema_dict, is_schema=True)
+    def expand_flat_metaconfig(cls, metaconfig_dict):
+        """Expand a flattened metaconfig dict."""
+        return cls._expand_flat_structure(metaconfig_dict, is_metaconfig=True)
 
     @classmethod
-    def expand_flat_values(cls, values_dict):
-        """Expand a flattened values dict."""
-        return cls._expand_flat_structure(values_dict, is_schema=False)
+    def expand_flat_config(cls, config_dict):
+        """Expand a flattened config dict."""
+        return cls._expand_flat_structure(config_dict, is_metaconfig=False)
 
     @classmethod
     def _get_parameter_type(cls, raw):
@@ -48,7 +48,7 @@ class ConfigurationFileParser:
 
     @classmethod
     def _flatten_nested_structure(cls, raw_dict):
-        """Flatten the schema dict for argparse interoperability."""
+        """Flatten dict structure for argparse interoperability."""
         flat_dict = {}
 
         def extract_flat_parameters(raw, parent_str=None):
@@ -81,13 +81,15 @@ class ConfigurationFileParser:
         return flat_dict
 
     @classmethod
-    def _assign_nested_value_by_keys(cls, output_dict, parent_keys, value, is_schema):
+    def _assign_nested_value_by_keys(
+        cls, output_dict, parent_keys, value, is_metaconfig
+    ):
         """Assign a value into a nested dict, creating keys as necessary."""
 
         def assign(curr_dict, remaining_keys):
             key = remaining_keys[0]
             if len(remaining_keys) == 1:
-                if is_schema:
+                if is_metaconfig:
                     if key not in curr_dict:
                         curr_dict[key] = []
                     curr_dict[key].append(value)
@@ -102,20 +104,20 @@ class ConfigurationFileParser:
         assign(output_dict, parent_keys)
 
     @classmethod
-    def _expand_flat_structure(cls, structure, is_schema):
-        """Expand a flattened schema dict into a serializable nested dict."""
+    def _expand_flat_structure(cls, structure, is_metaconfig):
+        """Expand a flattened data structure into a serializable nested dict."""
         output_list = []
         nested_dict = {}
         for key in structure:
             if "." not in key:
-                if is_schema:
+                if is_metaconfig:
                     output_list.append(structure[key])
                 else:
                     nested_dict[key] = structure[key]
             else:
                 parent_keys = key.split(".")
                 cls._assign_nested_value_by_keys(
-                    nested_dict, parent_keys, structure[key], is_schema
+                    nested_dict, parent_keys, structure[key], is_metaconfig
                 )
         output_list.append(nested_dict)
-        return output_list if is_schema else nested_dict
+        return output_list if is_metaconfig else nested_dict

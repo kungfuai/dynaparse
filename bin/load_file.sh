@@ -1,2 +1,2 @@
 #!/bin/bash
-python example.py --config_schema sample/schema_nested.json --config_values sample/values_nested.json
+python example.py --metaconfig sample/metaconfig_nested.json --config sample/config_nested.json

@@ -8,15 +8,15 @@ from dynaparse.dynamic_configuration import DynamicConfiguration
 class DynamicArgumentParser(ArgumentParser):
     """Extends 'ArgumentParser' to include dynamic functionality."""
 
-    _RESERVED_ARGS = ["config_schema", "config_values", "randomize_config"]
+    _RESERVED_ARGS = ["metaconfig", "config", "randomize_config"]
 
     def __init__(self, *args, **kwargs):
         """Initialize new arg parser with dynamic args taken into account."""
         super().__init__(*args, **kwargs)
 
         self._dynamic_config = DynamicConfiguration()
-        self._schema_file = self._get_command_line_value_from_arg("config_schema")
-        self._values_file = self._get_command_line_value_from_arg("config_values")
+        self._metaconfig_file = self._get_command_line_value_from_arg("metaconfig")
+        self._config_file = self._get_command_line_value_from_arg("config")
 
         if self._argument_conflicts_exist():
             raise Exception(
@@ -25,16 +25,16 @@ class DynamicArgumentParser(ArgumentParser):
             )
 
         self.add_argument(
-            "--config_schema",
+            "--metaconfig",
             type=str,
             default=None,
-            help="Dynamic configuration schema file specifying variable named arguments",
+            help="Dynamic configuration metaconfig file specifying metadata for variable named arguments",
         )
         self.add_argument(
-            "--config_values",
+            "--config",
             type=str,
             default=None,
-            help="File specifying values following the schema in 'config_schema'. These will override command line args if specified.",
+            help="File specifying values following the schema in 'metaconfig'. These will override command line args if specified.",
         )
         self.add_argument(
             "--randomize_config",
@@ -54,10 +54,10 @@ class DynamicArgumentParser(ArgumentParser):
 
     def _check_for_dynamic_config(self):
         """Append arguments for a dynamic configuration."""
-        if self._schema_file is not None:
-            self._dynamic_config.load_schema(self._schema_file)
-        if self._values_file is not None:
-            self._dynamic_config.load_values(self._values_file)
+        if self._metaconfig_file is not None:
+            self._dynamic_config.load_metaconfig(self._metaconfig_file)
+        if self._config_file is not None:
+            self._dynamic_config.load_config(self._config_file)
         self._dynamic_config.append_to_arg_parser(self)
         self._dynamic_config.patch_sys_argv()
 
@@ -108,10 +108,10 @@ class DynamicArgumentParser(ArgumentParser):
         """Parse all arguments including dynamic configuration-based ones."""
         args = super().parse_args()
 
-        if self._dynamic_config.has_schema() and args.randomize_config:
+        if self._dynamic_config.has_metaconfig() and args.randomize_config:
             self._dynamic_config.overwrite_args_with_random(args)
 
-        if args.config_values is not None:
+        if args.config is not None:
             self._dynamic_config.overwrite_args_with_contents(args)
 
         return self._patch_kwargs(args)

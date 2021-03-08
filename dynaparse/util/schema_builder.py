@@ -64,11 +64,11 @@ class SchemaBuilder:
             return "str"
 
     @classmethod
-    def infer_from_values_file(cls, values_file):
+    def infer_from_config_file(cls, filename):
         """Infer schema from a values file."""
-        flat_values = ConfigurationFileParser.load_flat_values(values_file)
+        flat_config = ConfigurationFileParser.load_flat_config(filename)
         inferred_schema = {}
-        for key, value in flat_values.items():
+        for key, value in flat_config.items():
             name = key.split(".")[-1]
             inferred_schema[key] = cls._get_parameter_dict_for_value(name, value)
         return inferred_schema

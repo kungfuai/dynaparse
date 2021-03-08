@@ -15,20 +15,20 @@ from dynaparse.util.schema_builder import SchemaBuilder
 
 
 class DynamicConfiguration:
-    def __init__(self, values=None, schema=None):
+    def __init__(self, config=None, metaconfig=None):
         """Instantiate new dynamic configuration object."""
-        self.values_file = values
-        self.schema_file = schema
+        self.config = config
+        self.metaconfig = metaconfig
         self._schema = {}
         self._values = {}
-        if self.schema_file is not None:
-            self.load_schema(self.schema_file)
-        if self.values_file is not None:
-            self.load_values(self.values_file)
+        if self.metaconfig is not None:
+            self.load_metaconfig(self.metaconfig)
+        if self.config is not None:
+            self.load_config(self.config)
 
-    def has_schema(self):
+    def has_metaconfig(self):
         """Return whether schema are loaded."""
-        return self.schema_file is not None and self._schema
+        return self.metaconfig is not None and self._schema
 
     def get_values(self, random=False, fill_defaults=True, expand=False):
         """Get a dictionary of currently configured values, filling in defaults if required."""
@@ -45,7 +45,7 @@ class DynamicConfiguration:
         return (
             to_return
             if expand is False
-            else ConfigurationFileParser.expand_flat_values(to_return)
+            else ConfigurationFileParser.expand_flat_config(to_return)
         )
 
     def get_values_as_str(self, random=False, fill_defaults=True):
@@ -65,14 +65,14 @@ class DynamicConfiguration:
         else:
             raise Exception("Parameter name '%s' not recognized in schema" % (name))
 
-    def load_values(self, filename):
+    def load_config(self, filename):
         """Load values and schema from a given filename."""
-        raw_data = ConfigurationFileParser.load_flat_values(filename)
-        if self.schema_file is None:
+        raw_data = ConfigurationFileParser.load_flat_config(filename)
+        if self.metaconfig is None:
             warnings.warn(
-                "No schema file specified, inferring schema from '%s'" % (filename)
+                "No metaconfig file specified, inferring from '%s'" % (filename)
             )
-            self._raw_schema = SchemaBuilder.infer_from_values_file(filename)
+            self._raw_schema = SchemaBuilder.infer_from_config_file(filename)
             for parameter_name, parameter_dict in self._raw_schema.items():
                 self._append_parameter_from_dict(parameter_name, parameter_dict)
         for value_name, value in raw_data.items():
@@ -83,20 +83,20 @@ class DynamicConfiguration:
         with open(filename, "w") as fd:
             raw_values_dict = self.get_values(random=False)
             json.dump(
-                ConfigurationFileParser.expand_flat_values(to_write), fd, indent=4
+                ConfigurationFileParser.expand_flat_config(to_write), fd, indent=4
             )
 
-    def save_schema(self, schema_file):
+    def save_metaconfig(self, filename):
         """Save schema to a directory."""
-        self.schema_file = schema_file
-        expanded = ConfigurationFileParser.expand_flat_schema(self._raw_schema)
-        with open(schema_file, "w") as fd:
+        self.metaconfig = filename
+        expanded = ConfigurationFileParser.expand_flat_metaconfig(self._raw_schema)
+        with open(filename, "w") as fd:
             json.dump(expanded, fd, indent=4)
 
-    def load_schema(self, schema_file):
+    def load_metaconfig(self, filename):
         """Load schema from a directory."""
-        self.schema_file = schema_file
-        self._raw_schema = ConfigurationFileParser.load_flat_schema(schema_file)
+        self.metaconfig = filename
+        self._raw_schema = ConfigurationFileParser.load_flat_metaconfig(filename)
         for parameter_name, parameter_dict in self._raw_schema.items():
             self._append_parameter_from_dict(parameter_name, parameter_dict)
 
