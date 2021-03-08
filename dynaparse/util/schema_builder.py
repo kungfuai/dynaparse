@@ -33,7 +33,7 @@ class SchemaBuilder:
                 name=name,
                 help="(NO HELP CONFIGURED)",
                 required=True,
-                default=[],
+                default=value,
                 value_type=value_type,
             )
         elif isinstance(value, type(None)):
@@ -60,6 +60,8 @@ class SchemaBuilder:
             return "str"
         elif isinstance(value_list[0], float):
             return "float"
+        elif isinstance(value_list[0], dict):
+            return "dict"
         else:
             return "str"
 

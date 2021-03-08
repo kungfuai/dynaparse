@@ -27,13 +27,20 @@ class ConfigurationFileParser:
         return cls._expand_flat_structure(config_dict, is_metaconfig=False)
 
     @classmethod
+    def _is_parameter_dict(cls, raw):
+        """Check if a dictionary refers to a parameter."""
+        return isinstance(raw, dict) and (
+            "name" in raw and "help" in raw and "required" in raw and "default" in raw
+        )
+
+    @classmethod
     def _get_parameter_type(cls, raw):
         """Check if dict is a parameter dict."""
         is_parameter_dict = False
         is_parameter_list = False
         is_parameter_value = False
         if isinstance(raw, dict):
-            is_parameter_dict = "name" in raw and "help" in raw and "required" in raw
+            is_parameter_dict = cls._is_parameter_dict(raw)
         elif isinstance(raw, list):
             is_parameter_list = not any([isinstance(el, dict) for el in raw])
         else:
@@ -47,6 +54,39 @@ class ConfigurationFileParser:
             return "parent"
 
     @classmethod
+    def _has_parameter_children(cls, raw):
+        """Check whether a nested structure has parameter children."""
+
+        def inspect(to_inspect):
+            found_parameter = False
+            found_child_parameter = False
+            if isinstance(to_inspect, list):
+                for el in to_inspect:
+                    found_child_parameter = inspect(el)
+            elif isinstance(to_inspect, dict):
+                if cls._is_parameter_dict(to_inspect):
+                    found_parameter = True
+                for _, value in to_inspect.items():
+                    if isinstance(value, list) or isinstance(value, dict):
+                        found_child_parameter = inspect(value)
+            return found_parameter or found_child_parameter
+
+        return inspect(raw)
+
+    @classmethod
+    def _is_kwarg_list(cls, raw):
+        """Check if a list contains kwargs, e.g. for augmentation config."""
+        if not isinstance(raw, list):
+            return False
+        if not all([isinstance(el, dict)] for el in raw):
+            return False
+        if all([cls._is_parameter_dict(el) for el in raw]):
+            return False
+        if cls._has_parameter_children(raw):
+            return False
+        return True
+
+    @classmethod
     def _flatten_nested_structure(cls, raw_dict):
         """Flatten dict structure for argparse interoperability."""
         flat_dict = {}
@@ -57,6 +97,9 @@ class ConfigurationFileParser:
                 flat_dict[parent_str] = raw
                 return
             if isinstance(raw, list):
+                if cls._is_kwarg_list(raw):
+                    flat_dict[parent_str] = raw
+                    return
                 for instance in raw:
                     extract_flat_parameters(instance, parent_str)
             elif isinstance(raw, dict):
@@ -119,5 +162,6 @@ class ConfigurationFileParser:
                 cls._assign_nested_value_by_keys(
                     nested_dict, parent_keys, structure[key], is_metaconfig
                 )
-        output_list.append(nested_dict)
+        if len(nested_dict) > 0:
+            output_list.append(nested_dict)
         return output_list if is_metaconfig else nested_dict

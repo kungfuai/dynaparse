@@ -149,10 +149,12 @@ class DynamicConfiguration:
         """Overwrite args with randomly sampled values."""
         values = self.get_values(random=True)
         for name, value in values.items():
-            setattr(args, name, value)
+            if "--" + name not in sys.argv:
+                setattr(args, name, value)
 
     def overwrite_args_with_contents(self, args):
         """Overwrite args with contents of this class."""
         values = self.get_values(random=False)
         for name, value in values.items():
-            setattr(args, name, value)
+            if "--" + name not in sys.argv:
+                setattr(args, name, value)

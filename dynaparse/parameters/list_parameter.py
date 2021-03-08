@@ -1,3 +1,4 @@
+import json
 import random
 from dataclasses import dataclass
 from typing import List
@@ -13,8 +14,16 @@ class ListParameter(BaseParameter):
 
     def __post_init__(self):
         """Post-initialization validation method."""
+
+        def cast_dict(raw):
+            if isinstance(raw, str):
+                return json.loads(raw.replace("'", '"'))
+            return raw
+
         super().__post_init__()
-        self.value_typefunc = eval(self.value_type)
+        self.value_typefunc = (
+            cast_dict if self.value_type == "dict" else eval(self.value_type)
+        )
 
     def sample(self):
         """Sample at random, but since there's no notion of this, return the default."""
