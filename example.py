@@ -1,6 +1,6 @@
 from argparse import ArgumentDefaultsHelpFormatter
 
-from parsers.dynamic_argument_parser import DynamicArgumentParser
+from dynaparse import DynamicArgumentParser
 
 
 class Example1ArgumentParser(DynamicArgumentParser):
