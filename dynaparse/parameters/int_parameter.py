@@ -1,7 +1,7 @@
 import random
 from dataclasses import dataclass
 
-from parameters.base_parameter import BaseParameter
+from dynaparse.parameters.base_parameter import BaseParameter
 
 
 @dataclass

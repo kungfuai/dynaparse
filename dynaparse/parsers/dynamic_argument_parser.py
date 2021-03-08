@@ -2,7 +2,7 @@ from argparse import ArgumentParser
 import sys
 from types import SimpleNamespace
 
-from dynamic_configuration import DynamicConfiguration
+from dynaparse.dynamic_configuration import DynamicConfiguration
 
 
 class DynamicArgumentParser(ArgumentParser):

@@ -3,7 +3,7 @@ from dataclasses import dataclass
 
 import numpy as np
 
-from parameters.base_parameter import BaseParameter
+from dynaparse.parameters.base_parameter import BaseParameter
 
 
 @dataclass

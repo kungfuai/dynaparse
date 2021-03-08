@@ -4,14 +4,14 @@ import os
 import sys
 import warnings
 
-from parsers.configuration_file_parser import ConfigurationFileParser
-from parameters.boolean_parameter import BooleanParameter
-from parameters.categorical_parameter import CategoricalParameter
-from parameters.float_parameter import FloatParameter
-from parameters.int_parameter import IntParameter
-from parameters.list_parameter import ListParameter
-from parameters.string_parameter import StringParameter
-from util.schema_builder import SchemaBuilder
+from dynaparse.parsers.configuration_file_parser import ConfigurationFileParser
+from dynaparse.parameters.boolean_parameter import BooleanParameter
+from dynaparse.parameters.categorical_parameter import CategoricalParameter
+from dynaparse.parameters.float_parameter import FloatParameter
+from dynaparse.parameters.int_parameter import IntParameter
+from dynaparse.parameters.list_parameter import ListParameter
+from dynaparse.parameters.string_parameter import StringParameter
+from dynaparse.util.schema_builder import SchemaBuilder
 
 
 class DynamicConfiguration:
