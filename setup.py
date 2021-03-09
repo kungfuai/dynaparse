@@ -36,6 +36,9 @@ setup(
     description=("Module for enabling dynamic configuration of scripts"),
     url="https://github.com/kungfuai/dynaparse",
     packages=find_packages(),
+    entry_points={
+        "console_scripts": ["dynaparse = dynaparse.console:main"],
+    },
     include_package_data=True,
     download_url="",
     install_requires=install_requires,

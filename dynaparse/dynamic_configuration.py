@@ -89,12 +89,14 @@ class DynamicConfiguration:
         for value_name, value in raw_data.items():
             self.set_value(value_name, value)
 
-    def save_values(self, filename):
+    def save_config(self, filename):
         """Save configuration values to a file."""
         with open(filename, "w") as fd:
             raw_values_dict = self.get_values(random=False)
             json.dump(
-                ConfigurationFileParser.expand_flat_config(to_write), fd, indent=4
+                ConfigurationFileParser.expand_flat_config(raw_values_dict),
+                fd,
+                indent=4,
             )
 
     def save_metaconfig(self, filename):
