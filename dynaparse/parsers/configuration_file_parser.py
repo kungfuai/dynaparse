@@ -129,20 +129,25 @@ class ConfigurationFileParser:
     ):
         """Assign a value into a nested dict, creating keys as necessary."""
 
-        def assign(curr_dict, remaining_keys):
+        def assign(current, remaining_keys):
             key = remaining_keys[0]
-            if len(remaining_keys) == 1:
-                if is_metaconfig:
-                    if key not in curr_dict:
-                        curr_dict[key] = []
-                    curr_dict[key].append(value)
-                else:
-                    curr_dict[key] = value
+            if is_metaconfig and len(remaining_keys) == 2:
+                if key not in current:
+                    current[key] = []
+                current[key].insert(-1, value)
+                return
+            elif not is_metaconfig and len(remaining_keys) == 1:
+                current[key] = value
                 return
             else:
-                if key not in curr_dict:
-                    curr_dict[key] = {}
-                assign(curr_dict[key], remaining_keys[1:])
+                if key not in current:
+                    current[key] = []
+                if (
+                    len(current[key]) == 0
+                    or cls._get_parameter_type(current[key][-1]) == "parameter_dict"
+                ):
+                    current[key].append({})
+                assign(current[key][-1], remaining_keys[1:])
 
         assign(output_dict, parent_keys)
 

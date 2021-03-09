@@ -5,6 +5,7 @@ import sys
 import warnings
 
 from dynaparse.parsers.configuration_file_parser import ConfigurationFileParser
+from dynaparse.parsers.pydantic_base_model_parser import PydanticBaseModelParser
 from dynaparse.parameters.boolean_parameter import BooleanParameter
 from dynaparse.parameters.categorical_parameter import CategoricalParameter
 from dynaparse.parameters.float_parameter import FloatParameter
@@ -65,14 +66,24 @@ class DynamicConfiguration:
         else:
             raise Exception("Parameter name '%s' not recognized in schema" % (name))
 
-    def load_config(self, filename):
+    def load_config(self, spec):
         """Load values and schema from a given filename."""
-        raw_data = ConfigurationFileParser.load_flat_config(filename)
+        is_file = False
+        if isinstance(spec, str):
+            if spec.endswith(".json"):
+                is_file = True
+                raw_data = ConfigurationFileParser.load_flat_config(spec)
+            else:
+                nested_data = PydanticBaseModelParser(spec).to_dict()
+                raw_data = ConfigurationFileParser._flatten_nested_structure(
+                    nested_data
+                )
         if self.metaconfig is None:
-            warnings.warn(
-                "No metaconfig file specified, inferring from '%s'" % (filename)
-            )
-            self._raw_schema = SchemaBuilder.infer_from_config_file(filename)
+            warnings.warn("No metaconfig file specified, inferring from '%s'" % (spec))
+            if is_file:
+                self._raw_schema = SchemaBuilder.infer_from_config_file(spec)
+            else:
+                self._raw_schema = SchemaBuilder.infer_from_flat_config(raw_data)
             for parameter_name, parameter_dict in self._raw_schema.items():
                 self._append_parameter_from_dict(parameter_name, parameter_dict)
         for value_name, value in raw_data.items():

@@ -17,11 +17,21 @@ class SchemaBuilder:
             )
         elif isinstance(value, int):
             param = IntParameter(
-                name=name, help="(NO HELP CONFIGURED)", required=True, default=value
+                name=name,
+                help="(NO HELP CONFIGURED)",
+                required=True,
+                default=value,
+                p1=value,
+                p2=value,
             )
         elif isinstance(value, float):
             param = FloatParameter(
-                name=name, help="(NO HELP CONFIGURED)", required=True, default=value
+                name=name,
+                help="(NO HELP CONFIGURED)",
+                required=True,
+                default=value,
+                p1=value,
+                p2=value,
             )
         elif isinstance(value, str):
             param = StringParameter(
@@ -69,6 +79,10 @@ class SchemaBuilder:
     def infer_from_config_file(cls, filename):
         """Infer schema from a values file."""
         flat_config = ConfigurationFileParser.load_flat_config(filename)
+        return cls.infer_from_flat_config(flat_config)
+
+    @classmethod
+    def infer_from_flat_config(cls, flat_config):
         inferred_schema = {}
         for key, value in flat_config.items():
             name = key.split(".")[-1]
