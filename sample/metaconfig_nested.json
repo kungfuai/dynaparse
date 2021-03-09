@@ -1,60 +1,56 @@
 [
-    {
-        "name": "boolean_parameter_1",
+  {
+    "name": "boolean_parameter_1",
+    "help": "Help for boolean parameter 1",
+    "required": true,
+    "default": true,
+    "parameter_type": "bool",
+    "is_constant": true
+  },
+  {
+    "name": "categorical_parameter_1",
+    "help": "Help for categorical parameter 1",
+    "required": true,
+    "default": "option1",
+    "parameter_type": "str"
+  },
+  {
+    "name": "float_parameter_1",
+    "help": "(NO HELP CONFIGURED)",
+    "required": true,
+    "default": 1.0,
+    "distribution": "uniform",
+    "p1": 1.0,
+    "p2": 1.0,
+    "parameter_type": "float"
+  },
+  {
+    "name": "list_parameter_1",
+    "help": "(NO HELP CONFIGURED)",
+    "required": true,
+    "default": [0, 1, 2],
+    "value_type": "int",
+    "parameter_type": "list"
+  },
+  {
+    "loss": [
+      {
+        "name": "int_parameter_1",
         "help": "(NO HELP CONFIGURED)",
         "required": true,
-        "default": true,
-        "parameter_type": "bool",
-        "is_constant": true
-    },
-    {
-        "name": "categorical_parameter_1",
-        "help": "(NO HELP CONFIGURED)",
-        "required": true,
-        "default": "option1",
-        "parameter_type": "str"
-    },
-    {
-        "name": "float_parameter_1",
-        "help": "(NO HELP CONFIGURED)",
-        "required": true,
-        "default": 1.0,
+        "default": 1,
         "distribution": "uniform",
-        "p1": 1.0,
-        "p2": 1.0,
-        "parameter_type": "float"
-    },
-    {
-        "name": "list_parameter_1",
+        "parameter_type": "int",
+        "p1": 1,
+        "p2": 1
+      },
+      {
+        "name": "str_parameter_1",
         "help": "(NO HELP CONFIGURED)",
         "required": true,
-        "default": [
-            0,
-            1,
-            2
-        ],
-        "value_type": "int",
-        "parameter_type": "list"
-    },
-    {
-        "loss": [
-            {
-                "name": "int_parameter_1",
-                "help": "(NO HELP CONFIGURED)",
-                "required": true,
-                "default": 1,
-                "distribution": "uniform",
-                "parameter_type": "int",
-                "p1": 1,
-                "p2": 1
-            },
-            {
-                "name": "str_parameter_1",
-                "help": "(NO HELP CONFIGURED)",
-                "required": true,
-                "default": null,
-                "parameter_type": "str"
-            }
-        ]
-    }
+        "default": null,
+        "parameter_type": "str"
+      }
+    ]
+  }
 ]

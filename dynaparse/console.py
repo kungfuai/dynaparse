@@ -17,6 +17,7 @@ def main():
         print(HELP_STR)
         exit(0)
     elif sys.argv[1] == "init" and len(sys.argv) == 3:
+        sys.path.append("")
         dc = DynamicConfiguration(sys.argv[2])
         config_name = "_config_auto.json"
         metaconfig_name = "_metaconfig_auto.json"

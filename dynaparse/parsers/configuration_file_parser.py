@@ -1,5 +1,7 @@
 import json
 
+from dynaparse.parsers.yaml_parser import YAMLParser
+
 
 class ConfigurationFileParser:
     @classmethod
@@ -12,8 +14,11 @@ class ConfigurationFileParser:
     @classmethod
     def load_flat_config(cls, filename):
         """Return flattened config dict from JSON file."""
-        with open(filename, "r") as fd:
-            raw = json.load(fd)
+        if YAMLParser.is_yaml(filename):
+            raw = YAMLParser.load(filename)
+        else:  # Assume json otherwise
+            with open(filename, "r") as fd:
+                raw = json.load(fd)
         return cls._flatten_nested_structure(raw)
 
     @classmethod
@@ -140,14 +145,19 @@ class ConfigurationFileParser:
                 current[key] = value
                 return
             else:
-                if key not in current:
-                    current[key] = []
-                if (
-                    len(current[key]) == 0
-                    or cls._get_parameter_type(current[key][-1]) == "parameter_dict"
-                ):
-                    current[key].append({})
-                assign(current[key][-1], remaining_keys[1:])
+                if is_metaconfig:
+                    if key not in current:
+                        current[key] = []
+                    if (
+                        len(current[key]) == 0
+                        or cls._get_parameter_type(current[key][-1]) == "parameter_dict"
+                    ):
+                        current[key].append({})
+                    assign(current[key][-1], remaining_keys[1:])
+                else:
+                    if key not in current:
+                        current[key] = {}
+                    assign(current[key], remaining_keys[1:])
 
         assign(output_dict, parent_keys)
 

@@ -70,7 +70,7 @@ class DynamicConfiguration:
         """Load values and schema from a given filename."""
         is_file = False
         if isinstance(spec, str):
-            if spec.endswith(".json"):
+            if os.path.isfile(spec):
                 is_file = True
                 raw_data = ConfigurationFileParser.load_flat_config(spec)
             else:
