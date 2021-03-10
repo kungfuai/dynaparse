@@ -1,34 +1,37 @@
 from argparse import _StoreAction
-from collections import OrderedDict
 import json
 import os
 import sys
+import warnings
 
-from boolean_parameter import BooleanParameter
-from categorical_parameter import CategoricalParameter
-from float_parameter import FloatParameter
-from int_parameter import IntParameter
-from list_parameter import ListParameter
-from string_parameter import StringParameter
+from dynaparse.parsers.configuration_file_parser import ConfigurationFileParser
+from dynaparse.parsers.pydantic_base_model_parser import PydanticBaseModelParser
+from dynaparse.parameters.boolean_parameter import BooleanParameter
+from dynaparse.parameters.categorical_parameter import CategoricalParameter
+from dynaparse.parameters.float_parameter import FloatParameter
+from dynaparse.parameters.int_parameter import IntParameter
+from dynaparse.parameters.list_parameter import ListParameter
+from dynaparse.parameters.string_parameter import StringParameter
+from dynaparse.util.schema_builder import SchemaBuilder
 
 
 class DynamicConfiguration:
-    def __init__(self, values_file=None, schema_file=None):
+    def __init__(self, config=None, metaconfig=None):
         """Instantiate new dynamic configuration object."""
-        self.values_file = values_file
-        self.schema_file = schema_file
-        self._schema = OrderedDict()
-        self._values = OrderedDict()
-        if self.schema_file is not None:
-            self.load_schema(self.schema_file)
-        if self.values_file is not None:
-            self.load_file(values_file)
+        self.config = config
+        self.metaconfig = metaconfig
+        self._schema = {}
+        self._values = {}
+        if self.metaconfig is not None:
+            self.load_metaconfig(self.metaconfig)
+        if self.config is not None:
+            self.load_config(self.config)
 
-    def has_schema(self):
+    def has_metaconfig(self):
         """Return whether schema are loaded."""
-        return self.schema_file is not None
+        return self.metaconfig is not None and self._schema
 
-    def get_values(self, random=False, fill_defaults=True):
+    def get_values(self, random=False, fill_defaults=True, expand=False):
         """Get a dictionary of currently configured values, filling in defaults if required."""
         to_return = {}
         for name in self._schema:
@@ -40,7 +43,11 @@ class DynamicConfiguration:
                 to_return[name] = self._values[name]
             elif fill_defaults:
                 to_return[name] = self._schema[name].get_default()
-        return to_return
+        return (
+            to_return
+            if expand is False
+            else ConfigurationFileParser.expand_flat_config(to_return)
+        )
 
     def get_values_as_str(self, random=False, fill_defaults=True):
         """Cast values as strings."""
@@ -59,40 +66,54 @@ class DynamicConfiguration:
         else:
             raise Exception("Parameter name '%s' not recognized in schema" % (name))
 
-    def load_values(self, filename):
+    def load_config(self, spec):
         """Load values and schema from a given filename."""
-        with open(filename, "r") as fd:
-            raw_data = json.load(fd)
-        print(raw_data)
+        is_file = False
+        if isinstance(spec, str):
+            if os.path.isfile(spec):
+                is_file = True
+                raw_data = ConfigurationFileParser.load_flat_config(spec)
+            else:
+                nested_data = PydanticBaseModelParser(spec).to_dict()
+                raw_data = ConfigurationFileParser._flatten_nested_structure(
+                    nested_data
+                )
+        if self.metaconfig is None:
+            warnings.warn("No metaconfig file specified, inferring from '%s'" % (spec))
+            if is_file:
+                self._raw_schema = SchemaBuilder.infer_from_config_file(spec)
+            else:
+                self._raw_schema = SchemaBuilder.infer_from_flat_config(raw_data)
+            for parameter_name, parameter_dict in self._raw_schema.items():
+                self._append_parameter_from_dict(parameter_name, parameter_dict)
         for value_name, value in raw_data.items():
             self.set_value(value_name, value)
 
-    def save_values(self, filename):
+    def save_config(self, filename):
         """Save configuration values to a file."""
         with open(filename, "w") as fd:
-            to_write = (
-                self._values if len(self._values) > 0 else self.get_values(random=False)
+            raw_values_dict = self.get_values(random=False)
+            json.dump(
+                ConfigurationFileParser.expand_flat_config(raw_values_dict),
+                fd,
+                indent=4,
             )
-            json.dump(to_write, fd, indent=4)
 
-    def save_schema(self, schema_file):
+    def save_metaconfig(self, filename):
         """Save schema to a directory."""
-        self.schema_file = schema_file
-        raw_schema = [self._schema[k].to_dict() for k in self._schema]
-        with open(schema_file, "w") as fd:
-            json.dump(raw_schema, fd, indent=4)
+        self.metaconfig = filename
+        expanded = ConfigurationFileParser.expand_flat_metaconfig(self._raw_schema)
+        with open(filename, "w") as fd:
+            json.dump(expanded, fd, indent=4)
 
-    def load_schema(self, schema_file):
+    def load_metaconfig(self, filename):
         """Load schema from a directory."""
-        self.schema_file = schema_file
-        self._schema = OrderedDict()
-        with open(self.schema_file, "r") as fd:
-            raw_schema = json.load(fd)
+        self.metaconfig = filename
+        self._raw_schema = ConfigurationFileParser.load_flat_metaconfig(filename)
+        for parameter_name, parameter_dict in self._raw_schema.items():
+            self._append_parameter_from_dict(parameter_name, parameter_dict)
 
-        for parameter in raw_schema:
-            self._append_parameter_from_dict(parameter)
-
-    def _append_parameter_from_dict(self, parameter_dict):
+    def _append_parameter_from_dict(self, parameter_name, parameter_dict):
         """Append a parameter to the schema dictionary."""
         if parameter_dict["parameter_type"] == "int":
             initializer = IntParameter
@@ -110,7 +131,7 @@ class DynamicConfiguration:
             raise Exception(
                 "Unrecognized parameter type '%s'" % (parameter_dict["parameter_type"])
             )
-        self._schema[parameter_dict["name"]] = initializer(**parameter_dict)
+        self._schema[parameter_name] = initializer(**parameter_dict)
 
     def append_to_arg_parser(self, arg_parser):
         """Append arguments to an existing argparser."""
@@ -141,10 +162,12 @@ class DynamicConfiguration:
         """Overwrite args with randomly sampled values."""
         values = self.get_values(random=True)
         for name, value in values.items():
-            setattr(args, name, value)
+            if "--" + name not in sys.argv:
+                setattr(args, name, value)
 
     def overwrite_args_with_contents(self, args):
         """Overwrite args with contents of this class."""
         values = self.get_values(random=False)
         for name, value in values.items():
-            setattr(args, name, value)
+            if "--" + name not in sys.argv:
+                setattr(args, name, value)

@@ -1,30 +1,21 @@
 import random
 from dataclasses import dataclass
 
-from base_parameter import BaseParameter
+from dynaparse.parameters.base_parameter import BaseParameter
 
 
 @dataclass
 class IntParameter(BaseParameter):
     default: int = None
-    low: int = None
-    high: int = None
     distribution: str = "uniform"
     parameter_type: str = "int"
-
-    def __post_init__(self):
-        """Post-initialization validation method."""
-        super().__post_init__()
-        if self.default < self.low or self.default > self.high:
-            raise Exception(
-                "Default value %d not between low value %d and high value %d (inclusive)"
-                % (self.default, self.low, self.high)
-            )
+    p1: int = None
+    p2: int = None
 
     def sample(self):
         """Sample a value from the pre-configured distribution."""
         if self.distribution == "uniform":
-            return random.sample(list(range(self.low, self.high + 1)), k=1)[0]
+            return random.sample(list(range(self.p1, self.p2 + 1)), k=1)[0]
 
         raise Exception("Unsupported distribution '%s'" % (self.distribution))
 
