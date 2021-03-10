@@ -108,10 +108,11 @@ class DynamicArgumentParser(ArgumentParser):
         """Parse all arguments including dynamic configuration-based ones."""
         args = super().parse_args()
 
-        if self._dynamic_config.has_metaconfig() and args.randomize_config:
-            self._dynamic_config.overwrite_args_with_random(args)
-
         if args.config is not None:
             self._dynamic_config.overwrite_args_with_contents(args)
+        if args.randomize_config:
+            self._dynamic_config.overwrite_args_with_random(args)
+        if self._dynamic_config.has_metaconfig():
+            self._dynamic_config.validate_args(args)
 
         return self._patch_kwargs(args)

@@ -158,16 +158,25 @@ class DynamicConfiguration:
                 else:
                     sys.argv.append(value_str)
 
+    def validate_args(self, args):
+        """Validate arg types for previously parsed args."""
+
+        for nested_argname in self._schema:
+            try:
+                obj = getattr(args, nested_argname)
+                self._schema[nested_argname].cast(obj)
+            except Exception as e:
+                if self._schema[nested_argname].required:
+                    raise Exception(e)
+
     def overwrite_args_with_random(self, args):
         """Overwrite args with randomly sampled values."""
         values = self.get_values(random=True)
         for name, value in values.items():
-            if "--" + name not in sys.argv:
-                setattr(args, name, value)
+            setattr(args, name, value)
 
     def overwrite_args_with_contents(self, args):
         """Overwrite args with contents of this class."""
         values = self.get_values(random=False)
         for name, value in values.items():
-            if "--" + name not in sys.argv:
-                setattr(args, name, value)
+            setattr(args, name, value)
