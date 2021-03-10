@@ -8,7 +8,7 @@ from dynaparse.dynamic_configuration import DynamicConfiguration
 class DynamicArgumentParser(ArgumentParser):
     """Extends 'ArgumentParser' to include dynamic functionality."""
 
-    _RESERVED_ARGS = ["metaconfig", "config", "randomize_config"]
+    _RESERVED_ARGS = ["metaconfig", "config", "random_sample"]
 
     def __init__(self, *args, **kwargs):
         """Initialize new arg parser with dynamic args taken into account."""
@@ -37,7 +37,7 @@ class DynamicArgumentParser(ArgumentParser):
             help="File specifying values following the schema in 'metaconfig'. These will override command line args if specified.",
         )
         self.add_argument(
-            "--randomize_config",
+            "--random_sample",
             action="store_true",
             default=False,
             help="If True, generate random parameters from the specified dynamic configuration.",
@@ -110,7 +110,7 @@ class DynamicArgumentParser(ArgumentParser):
 
         if args.config is not None:
             self._dynamic_config.overwrite_args_with_contents(args)
-        if args.randomize_config:
+        if args.random_sample:
             self._dynamic_config.overwrite_args_with_random(args)
         if self._dynamic_config.has_metaconfig():
             self._dynamic_config.validate_args(args)
