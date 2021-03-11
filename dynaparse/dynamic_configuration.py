@@ -9,7 +9,7 @@ from pydantic import BaseModel
 import yaml
 
 from dynaparse.parsers.configuration_file_parser import ConfigurationFileParser
-from dynaparse.parsers.pydantic_base_model_parser import PydanticBaseModelParser
+from dynaparse.parsers.class_model_parser import ClassModelParser
 from dynaparse.parameters.boolean_parameter import BooleanParameter
 from dynaparse.parameters.categorical_parameter import CategoricalParameter
 from dynaparse.parameters.float_parameter import FloatParameter
@@ -76,11 +76,8 @@ class DynamicConfiguration:
         if isinstance(spec, str) and os.path.isfile(spec):
             is_file = True
             raw_data = ConfigurationFileParser.load_flat_config(spec)
-        elif isclass(spec) and not isinstance(spec, BaseModel):
-            nested_data = yaml.safe_load(spec.__doc__)
-            raw_data = ConfigurationFileParser._flatten_nested_structure(nested_data)
         else:
-            nested_data = PydanticBaseModelParser(spec).to_dict()
+            nested_data = ClassModelParser(spec).to_dict()
             raw_data = ConfigurationFileParser._flatten_nested_structure(nested_data)
         if self.metaconfig is None:
             warnings.warn("No metaconfig file specified, inferring from '%s'" % (spec))

@@ -13,7 +13,7 @@ warnings.filterwarnings("ignore")
 
 
 def main():
-    if sys.argv[1] in ["-h", "--help"]:
+    if "-h" in sys.argv or "--help" in sys.argv:
         print(HELP_STR)
         exit(0)
     elif sys.argv[1] == "init" and len(sys.argv) == 3:

@@ -1,14 +1,18 @@
 import importlib
+from inspect import isclass
 
 from pydantic import BaseModel
+import yaml
+
+from dynaparse.parsers.configuration_file_parser import ConfigurationFileParser
 
 
-class PydanticBaseModelParser:
+class ClassModelParser:
     def __init__(self, obj):
-        if isinstance(obj, BaseModel):
-            self.base_model = obj
+        if isclass(obj):
+            self.model = obj
         elif isinstance(obj, str):
-            self.base_model = self._load_from_path(obj)
+            self.model = self._load_from_path(obj)
 
     def _load_from_path(self, path):
         """Load an enum class given an import path."""
@@ -18,4 +22,7 @@ class PydanticBaseModelParser:
 
     def to_dict(self):
         """Generate (potentially nested) dictionary from pydantic base model config class."""
-        return self.base_model.dict()
+        if isinstance(self.model, BaseModel):
+            return self.model.dict()
+        else:
+            return yaml.safe_load(self.model.__doc__)
