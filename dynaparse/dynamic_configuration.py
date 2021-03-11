@@ -20,20 +20,20 @@ from dynaparse.util.schema_builder import SchemaBuilder
 
 
 class DynamicConfiguration:
-    def __init__(self, config=None, metaconfig=None):
+    def __init__(self, config=None, spec=None):
         """Instantiate new dynamic configuration object."""
         self.config = config
-        self.metaconfig = metaconfig
+        self.spec = spec
         self._schema = {}
         self._values = {}
-        if self.metaconfig is not None:
-            self.load_metaconfig(self.metaconfig)
+        if self.spec is not None:
+            self.load_spec(self.spec)
         if self.config is not None:
             self.load_config(self.config)
 
-    def has_metaconfig(self):
+    def has_spec(self):
         """Return whether schema are loaded."""
-        return self.metaconfig is not None and self._schema
+        return self.spec is not None and self._schema
 
     def get_values(self, random=False, fill_defaults=True, expand=False):
         """Get a dictionary of currently configured values, filling in defaults if required."""
@@ -79,8 +79,8 @@ class DynamicConfiguration:
         else:
             nested_data = ClassModelParser(spec).to_dict()
             raw_data = ConfigurationFileParser._flatten_nested_structure(nested_data)
-        if self.metaconfig is None:
-            warnings.warn("No metaconfig file specified, inferring from '%s'" % (spec))
+        if self.spec is None:
+            warnings.warn("No spec file specified, inferring from '%s'" % (spec))
             if is_file:
                 self._raw_schema = SchemaBuilder.infer_from_config_file(spec)
             else:
@@ -100,17 +100,17 @@ class DynamicConfiguration:
                 indent=4,
             )
 
-    def save_metaconfig(self, filename):
+    def save_spec(self, filename):
         """Save schema to a directory."""
-        self.metaconfig = filename
-        expanded = ConfigurationFileParser.expand_flat_metaconfig(self._raw_schema)
+        self.spec = filename
+        expanded = ConfigurationFileParser.expand_flat_spec(self._raw_schema)
         with open(filename, "w") as fd:
             json.dump(expanded, fd, indent=4)
 
-    def load_metaconfig(self, filename):
+    def load_spec(self, filename):
         """Load schema from a directory."""
-        self.metaconfig = filename
-        self._raw_schema = ConfigurationFileParser.load_flat_metaconfig(filename)
+        self.spec = filename
+        self._raw_schema = ConfigurationFileParser.load_flat_spec(filename)
         for parameter_name, parameter_dict in self._raw_schema.items():
             self._append_parameter_from_dict(parameter_name, parameter_dict)
 

@@ -8,14 +8,14 @@ from dynaparse.dynamic_configuration import DynamicConfiguration
 class DynamicArgumentParser(ArgumentParser):
     """Extends 'ArgumentParser' to include dynamic functionality."""
 
-    _RESERVED_ARGS = ["metaconfig", "config", "random_sample"]
+    _RESERVED_ARGS = ["spec", "config", "random_sample"]
 
     def __init__(self, *args, **kwargs):
         """Initialize new arg parser with dynamic args taken into account."""
         super().__init__(*args, **kwargs)
 
         self._dynamic_config = DynamicConfiguration()
-        self._metaconfig_file = self._get_command_line_value_from_arg("metaconfig")
+        self._spec_file = self._get_command_line_value_from_arg("spec")
         self._config_file = self._get_command_line_value_from_arg("config")
 
         if self._argument_conflicts_exist():
@@ -25,16 +25,16 @@ class DynamicArgumentParser(ArgumentParser):
             )
 
         self.add_argument(
-            "--metaconfig",
+            "--spec",
             type=str,
             default=None,
-            help="Dynamic configuration metaconfig file specifying metadata for variable named arguments",
+            help="Dynamic configuration spec file specifying metadata for variable named arguments",
         )
         self.add_argument(
             "--config",
             type=str,
             default=None,
-            help="File specifying values following the schema in 'metaconfig'. These will override command line args if specified.",
+            help="File specifying values following the schema in 'spec'. These will override command line args if specified.",
         )
         self.add_argument(
             "--random_sample",
@@ -54,8 +54,8 @@ class DynamicArgumentParser(ArgumentParser):
 
     def _check_for_dynamic_config(self):
         """Append arguments for a dynamic configuration."""
-        if self._metaconfig_file is not None:
-            self._dynamic_config.load_metaconfig(self._metaconfig_file)
+        if self._spec_file is not None:
+            self._dynamic_config.load_spec(self._spec_file)
         if self._config_file is not None:
             self._dynamic_config.load_config(self._config_file)
         self._dynamic_config.append_to_arg_parser(self)
@@ -112,7 +112,7 @@ class DynamicArgumentParser(ArgumentParser):
             self._dynamic_config.overwrite_args_with_contents(args)
         if args.random_sample:
             self._dynamic_config.overwrite_args_with_random(args)
-        if self._dynamic_config.has_metaconfig():
+        if self._dynamic_config.has_spec():
             self._dynamic_config.validate_args(args)
 
         return self._patch_kwargs(args)
