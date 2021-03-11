@@ -1,8 +1,12 @@
 from argparse import _StoreAction
+from inspect import isclass
 import json
 import os
 import sys
 import warnings
+
+from pydantic import BaseModel
+import yaml
 
 from dynaparse.parsers.configuration_file_parser import ConfigurationFileParser
 from dynaparse.parsers.pydantic_base_model_parser import PydanticBaseModelParser
@@ -67,17 +71,17 @@ class DynamicConfiguration:
             raise Exception("Parameter name '%s' not recognized in schema" % (name))
 
     def load_config(self, spec):
-        """Load values and schema from a given filename."""
+        """Load values and schema from a given spec."""
         is_file = False
-        if isinstance(spec, str):
-            if os.path.isfile(spec):
-                is_file = True
-                raw_data = ConfigurationFileParser.load_flat_config(spec)
-            else:
-                nested_data = PydanticBaseModelParser(spec).to_dict()
-                raw_data = ConfigurationFileParser._flatten_nested_structure(
-                    nested_data
-                )
+        if isinstance(spec, str) and os.path.isfile(spec):
+            is_file = True
+            raw_data = ConfigurationFileParser.load_flat_config(spec)
+        elif isclass(spec) and not isinstance(spec, BaseModel):
+            nested_data = yaml.safe_load(spec.__doc__)
+            raw_data = ConfigurationFileParser._flatten_nested_structure(nested_data)
+        else:
+            nested_data = PydanticBaseModelParser(spec).to_dict()
+            raw_data = ConfigurationFileParser._flatten_nested_structure(nested_data)
         if self.metaconfig is None:
             warnings.warn("No metaconfig file specified, inferring from '%s'" % (spec))
             if is_file:
