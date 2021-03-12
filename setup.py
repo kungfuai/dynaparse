@@ -7,7 +7,7 @@ def read(fname):
 
 
 classifiers = [
-    "Development Status :: 4 - Beta",
+    "Development Status :: 3 - Alpha",
     "Intended Audience :: Developers",
     "Topic :: Software Development :: Libraries",
     "License :: OSI Approved :: MIT License",
@@ -25,10 +25,12 @@ install_requires = [
 
 setup(
     name="dynaparse",
-    version="0.1",
+    version="0.1a1",
     author="KUNGFU.AI",
     author_email="michael@kungfu.ai",
-    description=("Module for enabling dynamic configuration of scripts"),
+    description=(
+        "Library enabling dynamic configuration of scripts, especially for machine learning applications"
+    ),
     url="https://github.com/kungfuai/dynaparse",
     packages=find_packages(),
     entry_points={

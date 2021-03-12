@@ -33,7 +33,7 @@
     "parameter_type": "list"
   },
   {
-    "loss": [
+    "nested_section": [
       {
         "name": "int_parameter_1",
         "help": "(NO HELP CONFIGURED)",
