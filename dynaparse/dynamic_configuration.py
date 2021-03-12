@@ -1,11 +1,15 @@
 from argparse import _StoreAction
+from inspect import isclass
 import json
 import os
 import sys
 import warnings
 
+from pydantic import BaseModel
+import yaml
+
 from dynaparse.parsers.configuration_file_parser import ConfigurationFileParser
-from dynaparse.parsers.pydantic_base_model_parser import PydanticBaseModelParser
+from dynaparse.parsers.class_model_parser import ClassModelParser
 from dynaparse.parameters.boolean_parameter import BooleanParameter
 from dynaparse.parameters.categorical_parameter import CategoricalParameter
 from dynaparse.parameters.float_parameter import FloatParameter
@@ -16,20 +20,20 @@ from dynaparse.util.schema_builder import SchemaBuilder
 
 
 class DynamicConfiguration:
-    def __init__(self, config=None, metaconfig=None):
+    def __init__(self, config=None, spec=None):
         """Instantiate new dynamic configuration object."""
         self.config = config
-        self.metaconfig = metaconfig
+        self.spec = spec
         self._schema = {}
         self._values = {}
-        if self.metaconfig is not None:
-            self.load_metaconfig(self.metaconfig)
+        if self.spec is not None:
+            self.load_spec(self.spec)
         if self.config is not None:
             self.load_config(self.config)
 
-    def has_metaconfig(self):
+    def has_spec(self):
         """Return whether schema are loaded."""
-        return self.metaconfig is not None and self._schema
+        return self.spec is not None and self._schema
 
     def get_values(self, random=False, fill_defaults=True, expand=False):
         """Get a dictionary of currently configured values, filling in defaults if required."""
@@ -67,19 +71,16 @@ class DynamicConfiguration:
             raise Exception("Parameter name '%s' not recognized in schema" % (name))
 
     def load_config(self, spec):
-        """Load values and schema from a given filename."""
+        """Load values and schema from a given spec."""
         is_file = False
-        if isinstance(spec, str):
-            if os.path.isfile(spec):
-                is_file = True
-                raw_data = ConfigurationFileParser.load_flat_config(spec)
-            else:
-                nested_data = PydanticBaseModelParser(spec).to_dict()
-                raw_data = ConfigurationFileParser._flatten_nested_structure(
-                    nested_data
-                )
-        if self.metaconfig is None:
-            warnings.warn("No metaconfig file specified, inferring from '%s'" % (spec))
+        if isinstance(spec, str) and os.path.isfile(spec):
+            is_file = True
+            raw_data = ConfigurationFileParser.load_flat_config(spec)
+        else:
+            nested_data = ClassModelParser(spec).to_dict()
+            raw_data = ConfigurationFileParser._flatten_nested_structure(nested_data)
+        if self.spec is None:
+            warnings.warn("No spec file specified, inferring from '%s'" % (spec))
             if is_file:
                 self._raw_schema = SchemaBuilder.infer_from_config_file(spec)
             else:
@@ -99,17 +100,17 @@ class DynamicConfiguration:
                 indent=4,
             )
 
-    def save_metaconfig(self, filename):
+    def save_spec(self, filename):
         """Save schema to a directory."""
-        self.metaconfig = filename
-        expanded = ConfigurationFileParser.expand_flat_metaconfig(self._raw_schema)
+        self.spec = filename
+        expanded = ConfigurationFileParser.expand_flat_spec(self._raw_schema)
         with open(filename, "w") as fd:
             json.dump(expanded, fd, indent=4)
 
-    def load_metaconfig(self, filename):
+    def load_spec(self, filename):
         """Load schema from a directory."""
-        self.metaconfig = filename
-        self._raw_schema = ConfigurationFileParser.load_flat_metaconfig(filename)
+        self.spec = filename
+        self._raw_schema = ConfigurationFileParser.load_flat_spec(filename)
         for parameter_name, parameter_dict in self._raw_schema.items():
             self._append_parameter_from_dict(parameter_name, parameter_dict)
 
@@ -158,16 +159,25 @@ class DynamicConfiguration:
                 else:
                     sys.argv.append(value_str)
 
+    def validate_args(self, args):
+        """Validate arg types for previously parsed args."""
+
+        for nested_argname in self._schema:
+            try:
+                obj = getattr(args, nested_argname)
+                self._schema[nested_argname].cast(obj)
+            except Exception as e:
+                if self._schema[nested_argname].required:
+                    raise Exception(e)
+
     def overwrite_args_with_random(self, args):
         """Overwrite args with randomly sampled values."""
         values = self.get_values(random=True)
         for name, value in values.items():
-            if "--" + name not in sys.argv:
-                setattr(args, name, value)
+            setattr(args, name, value)
 
     def overwrite_args_with_contents(self, args):
         """Overwrite args with contents of this class."""
         values = self.get_values(random=False)
         for name, value in values.items():
-            if "--" + name not in sys.argv:
-                setattr(args, name, value)
+            setattr(args, name, value)

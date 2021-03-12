@@ -5,8 +5,8 @@ from dynaparse.parsers.yaml_parser import YAMLParser
 
 class ConfigurationFileParser:
     @classmethod
-    def load_flat_metaconfig(cls, filename):
-        """Return the flattened metaconfig dict from JSON file."""
+    def load_flat_spec(cls, filename):
+        """Return the flattened spec dict from JSON file."""
         with open(filename, "r") as fd:
             raw = json.load(fd)
         return cls._flatten_nested_structure(raw)
@@ -22,14 +22,14 @@ class ConfigurationFileParser:
         return cls._flatten_nested_structure(raw)
 
     @classmethod
-    def expand_flat_metaconfig(cls, metaconfig_dict):
-        """Expand a flattened metaconfig dict."""
-        return cls._expand_flat_structure(metaconfig_dict, is_metaconfig=True)
+    def expand_flat_spec(cls, spec_dict):
+        """Expand a flattened spec dict."""
+        return cls._expand_flat_structure(spec_dict, is_spec=True)
 
     @classmethod
     def expand_flat_config(cls, config_dict):
         """Expand a flattened config dict."""
-        return cls._expand_flat_structure(config_dict, is_metaconfig=False)
+        return cls._expand_flat_structure(config_dict, is_spec=False)
 
     @classmethod
     def _is_parameter_dict(cls, raw):
@@ -130,22 +130,22 @@ class ConfigurationFileParser:
 
     @classmethod
     def _assign_nested_value_by_keys(
-        cls, output_dict, parent_keys, value, is_metaconfig
+        cls, output_dict, parent_keys, value, is_spec
     ):
         """Assign a value into a nested dict, creating keys as necessary."""
 
         def assign(current, remaining_keys):
             key = remaining_keys[0]
-            if is_metaconfig and len(remaining_keys) == 2:
+            if is_spec and len(remaining_keys) == 2:
                 if key not in current:
                     current[key] = []
                 current[key].insert(-1, value)
                 return
-            elif not is_metaconfig and len(remaining_keys) == 1:
+            elif not is_spec and len(remaining_keys) == 1:
                 current[key] = value
                 return
             else:
-                if is_metaconfig:
+                if is_spec:
                     if key not in current:
                         current[key] = []
                     if (
@@ -162,21 +162,21 @@ class ConfigurationFileParser:
         assign(output_dict, parent_keys)
 
     @classmethod
-    def _expand_flat_structure(cls, structure, is_metaconfig):
+    def _expand_flat_structure(cls, structure, is_spec):
         """Expand a flattened data structure into a serializable nested dict."""
         output_list = []
         nested_dict = {}
         for key in structure:
             if "." not in key:
-                if is_metaconfig:
+                if is_spec:
                     output_list.append(structure[key])
                 else:
                     nested_dict[key] = structure[key]
             else:
                 parent_keys = key.split(".")
                 cls._assign_nested_value_by_keys(
-                    nested_dict, parent_keys, structure[key], is_metaconfig
+                    nested_dict, parent_keys, structure[key], is_spec
                 )
         if len(nested_dict) > 0:
             output_list.append(nested_dict)
-        return output_list if is_metaconfig else nested_dict
+        return output_list if is_spec else nested_dict
