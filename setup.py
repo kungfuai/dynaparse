@@ -25,7 +25,7 @@ install_requires = [
 
 setup(
     name="dynaparse",
-    version="0.1a1",
+    version="0.1a2",
     author="KUNGFU.AI",
     author_email="michael@kungfu.ai",
     description=(
