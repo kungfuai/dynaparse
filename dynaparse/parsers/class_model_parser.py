@@ -4,8 +4,6 @@ from inspect import isclass
 from pydantic import BaseModel
 import yaml
 
-from dynaparse.parsers.configuration_file_parser import ConfigurationFileParser
-
 
 class ClassModelParser:
     def __init__(self, obj):
