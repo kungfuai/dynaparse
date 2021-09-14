@@ -1,12 +1,7 @@
-from argparse import _StoreAction
-from inspect import isclass
 import json
 import os
 import sys
 import warnings
-
-from pydantic import BaseModel
-import yaml
 
 from dynaparse.parsers.configuration_file_parser import ConfigurationFileParser
 from dynaparse.parsers.class_model_parser import ClassModelParser
@@ -180,4 +175,5 @@ class DynamicConfiguration:
         """Overwrite args with contents of this class."""
         values = self.get_values(random=False)
         for name, value in values.items():
-            setattr(args, name, value)
+            if "--" + name not in sys.argv:
+                setattr(args, name, value)
