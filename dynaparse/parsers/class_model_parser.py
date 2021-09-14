@@ -1,18 +1,19 @@
 import importlib
-from inspect import isclass
 
 from pydantic import BaseModel
 import yaml
 
-from dynaparse.parsers.configuration_file_parser import ConfigurationFileParser
-
 
 class ClassModelParser:
     def __init__(self, obj):
-        if isclass(obj):
-            self.model = obj
-        elif isinstance(obj, str):
+        if isinstance(obj, str):
             self.model = self._load_from_path(obj)
+        elif isinstance(obj, BaseModel):
+            self.model = obj
+        else:
+            raise Exception(
+                "Unrecognized class %s, can't parse with ClassModelParser" % str(obj)
+            )
 
     def _load_from_path(self, path):
         """Load an enum class given an import path."""

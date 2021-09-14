@@ -1,7 +1,6 @@
 import json
 import random
 from dataclasses import dataclass
-from typing import List
 
 from dynaparse.parameters.base_parameter import BaseParameter
 
