@@ -51,6 +51,7 @@ def test_typefunc():
     with pytest.raises(Exception):
         typefunc("invalid")
 
+
 def test_get_argparse_type():
     cp = CategoricalParameter(default="o1", options=["o1", "o2"], **BASE_KWARGS)
     assert cp.get_argparse_type() == str

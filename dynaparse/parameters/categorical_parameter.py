@@ -12,6 +12,7 @@ class CategoricalParameter(BaseParameter):
 
     def __post_init__(self):
         """Post-initialization validation method."""
+        super().__post_init__()
         if self.default not in self.options:
             raise Exception(
                 "Default value '%s' not in options list '%s'"

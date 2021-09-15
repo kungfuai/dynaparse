@@ -17,17 +17,17 @@ def test_init_when_args_unspecified():
 
 
 def test_init_when_name_type_invalid():
-    with pytest.raises(AssertionError):
+    with pytest.raises(TypeError):
         BaseParameter(name=1, help="test", required=True)
 
 
 def test_init_when_help_type_invalid():
-    with pytest.raises(AssertionError):
+    with pytest.raises(TypeError):
         BaseParameter(name="test", help=1, required=True)
 
 
 def test_init_when_required_type_invalid():
-    with pytest.raises(AssertionError):
+    with pytest.raises(TypeError):
         BaseParameter(name="test", help="test", required=1)
 
 
