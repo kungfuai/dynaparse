@@ -53,7 +53,7 @@ def test_init_when_invalid_parameter_type():
 
 def test_init_when_invalid_is_constant_type():
     with pytest.raises(TypeError):
-        BooleanParameter(default=True, is_constant=None, **BASE_KWARGS)
+        BooleanParameter(default=True, is_constant="test", **BASE_KWARGS)
 
 
 def test_sample_when_true():
