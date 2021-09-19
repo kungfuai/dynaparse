@@ -50,7 +50,7 @@ class TestDynamicArgumentParser(unittest.TestCase):
         assert args.random_sample is False
         assert args.spec == "tests/data/spec_example.json"
 
-    def test_parse_args_when_config_override(self):
+    def test_parse_args_when_config_override_json(self):
         sys.argv = [
             "script.sh",
             "--spec",
@@ -63,6 +63,26 @@ class TestDynamicArgumentParser(unittest.TestCase):
         assert args.boolean_parameter_1 is False
         assert args.categorical_parameter_1 == "option2"
         assert args.config is "tests/data/config_example.json"
+        assert args.float_parameter_1 == 2.0
+        assert args.list_parameter_1 == [2, 1, 0]
+        assert args.nested_section.int_parameter_1 == 2
+        assert args.nested_section.str_parameter_1 == "test"
+        assert args.random_sample is False
+        assert args.spec == "tests/data/spec_example.json"
+
+    def test_parse_args_when_config_override_yaml(self):
+        sys.argv = [
+            "script.sh",
+            "--spec",
+            "tests/data/spec_example.json",
+            "--config",
+            "tests/data/config_example.yaml",
+        ]
+        tp = get_sample_parser()()
+        args = tp.parse_args()
+        assert args.boolean_parameter_1 is False
+        assert args.categorical_parameter_1 == "option2"
+        assert args.config is "tests/data/config_example.yaml"
         assert args.float_parameter_1 == 2.0
         assert args.list_parameter_1 == [2, 1, 0]
         assert args.nested_section.int_parameter_1 == 2
