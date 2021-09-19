@@ -1,0 +1,10 @@
+{
+  "boolean_parameter_1": false,
+  "categorical_parameter_1": "option2",
+  "float_parameter_1": 2.0,
+  "list_parameter_1": [2, 1, 0],
+  "nested_section": {
+    "str_parameter_1": "test",
+    "int_parameter_1": 2
+  }
+}

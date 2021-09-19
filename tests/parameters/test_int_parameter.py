@@ -2,6 +2,7 @@ import pytest
 import random
 
 from dynaparse.parameters.int_parameter import IntParameter
+from dynaparse.parameters.int_parameter import int_with_none
 
 BASE_KWARGS = {"name": "test_int", "help": "test_help", "required": True}
 
@@ -66,7 +67,7 @@ def test_get_typefunc():
         parameter_type="int",
         **BASE_KWARGS
     )
-    assert ip.get_typefunc() == int
+    assert ip.get_typefunc() == int_with_none
 
 
 def test_get_argparse_type():
@@ -78,4 +79,4 @@ def test_get_argparse_type():
         parameter_type="int",
         **BASE_KWARGS
     )
-    assert ip.get_argparse_type() == int
+    assert ip.get_argparse_type() == int_with_none

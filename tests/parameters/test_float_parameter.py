@@ -3,6 +3,7 @@ import pytest
 import numpy as np
 
 from dynaparse.parameters.float_parameter import FloatParameter
+from dynaparse.parameters.float_parameter import float_with_none
 
 BASE_KWARGS = {"name": "test_float", "help": "test_help", "required": True}
 
@@ -85,7 +86,7 @@ def test_get_typefunc():
         parameter_type="float",
         **BASE_KWARGS
     )
-    assert fp.get_typefunc() == float
+    assert fp.get_typefunc() == float_with_none
 
 
 def test_get_argparse_type():
@@ -97,4 +98,4 @@ def test_get_argparse_type():
         parameter_type="float",
         **BASE_KWARGS
     )
-    assert fp.get_argparse_type() == float
+    assert fp.get_argparse_type() == float_with_none

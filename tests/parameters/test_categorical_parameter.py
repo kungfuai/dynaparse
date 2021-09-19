@@ -2,13 +2,14 @@ import pytest
 import random
 
 from dynaparse.parameters.categorical_parameter import CategoricalParameter
+from dynaparse.parameters.string_parameter import str_with_none
 
-BASE_KWARGS = {"name": "test_bool", "help": "test_help", "required": True}
+BASE_KWARGS = {"name": "test_cat", "help": "test_help", "required": True}
 
 
 def test_init_when_valid():
     cp = CategoricalParameter(default="o1", options=["o1", "o2"], **BASE_KWARGS)
-    assert cp.name == "test_bool"
+    assert cp.name == "test_cat"
     assert cp.help == "test_help"
     assert cp.required is True
     assert cp.default == "o1"
@@ -53,4 +54,4 @@ def test_typefunc():
 
 def test_get_argparse_type():
     cp = CategoricalParameter(default="o1", options=["o1", "o2"], **BASE_KWARGS)
-    assert cp.get_argparse_type() == str
+    assert cp.get_argparse_type() == str_with_none
