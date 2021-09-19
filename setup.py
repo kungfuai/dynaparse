@@ -19,7 +19,7 @@ classifiers = [
 install_requires = [
     "typeguard==2.10.0",
     "numpy==1.19.2",
-    "pydantic==1.8",
+    "pydantic==1.8.2",
     "pyyaml==5.4",
 ]
 
