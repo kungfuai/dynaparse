@@ -38,4 +38,3 @@ def test_load_from_path():
         parser._load_from_path("tests.data.config_class_example.ConfigClassExample"),
         ConfigClassExample,
     )
-
