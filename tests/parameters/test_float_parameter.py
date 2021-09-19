@@ -1,3 +1,5 @@
+import pytest
+
 import numpy as np
 
 from dynaparse.parameters.float_parameter import FloatParameter
@@ -24,6 +26,18 @@ def test_init_when_valid():
     assert fp.required is True
 
 
+def test_init_when_invalid_type():
+    with pytest.raises(TypeError):
+        FloatParameter(
+            default="1.0",
+            distribution="test",
+            p1=2.0,
+            p2=3.0,
+            parameter_type="float",
+            **BASE_KWARGS
+        )
+
+
 def test_sample_when_uniform():
     fp = FloatParameter(
         default=1.0,
@@ -48,6 +62,18 @@ def test_sample_when_normal():
     )
     np.random.seed(0)
     assert np.isclose(fp.sample(), 7.292157037902992)
+
+
+def test_sample_when_distribution_invalid():
+    with pytest.raises(Exception):
+        FloatParameter(
+            default=1.0,
+            distribution="test",
+            p1=2.0,
+            p2=3.0,
+            parameter_type="float",
+            **BASE_KWARGS
+        ).sample()
 
 
 def test_get_typefunc():
