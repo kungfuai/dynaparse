@@ -12,7 +12,14 @@ class BaseParameter:
     def __post_init__(self):
         """Validate the input."""
         for parameter, field in self.__dataclass_fields__.items():
-            check_type(parameter, getattr(self, parameter), field.type)
+            try:
+                check_type(parameter, getattr(self, parameter), field.type)
+            except TypeError:
+                if getattr(self, parameter) is not None:
+                    raise TypeError(
+                        "Parameter '%s' (value: '%s') type invalid, should be '%s'"
+                        % (parameter, str(getattr(self, parameter)), str(field.type))
+                    )
 
     def cast(self, value):
         """Cast a value type 'int'."""
