@@ -1,8 +1,6 @@
 import pytest
 import random
 
-import numpy as np
-
 from dynaparse.parameters.int_parameter import IntParameter
 
 BASE_KWARGS = {"name": "test_int", "help": "test_help", "required": True}
