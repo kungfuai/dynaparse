@@ -29,7 +29,7 @@ class ListParameter(BaseParameter):
         return self.default
 
     def get_typefunc(self):
-        """Return int."""
+        """Return typefunc for list."""
         return lambda x: [self.value_typefunc(v) for v in x]
 
     def get_argparse_type(self):
