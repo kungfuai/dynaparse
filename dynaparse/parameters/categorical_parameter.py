@@ -2,6 +2,7 @@ import random
 from dataclasses import dataclass
 
 from dynaparse.parameters.base_parameter import BaseParameter
+from dynaparse.parameters.string_parameter import str_with_none
 
 
 @dataclass
@@ -38,4 +39,4 @@ class CategoricalParameter(BaseParameter):
 
     def get_argparse_type(self):
         """Return str."""
-        return str
+        return str_with_none

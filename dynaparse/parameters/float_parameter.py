@@ -5,6 +5,8 @@ import numpy as np
 
 from dynaparse.parameters.base_parameter import BaseParameter
 
+float_with_none = lambda x: None if x == "None" else float(x)
+
 
 @dataclass
 class FloatParameter(BaseParameter):
@@ -25,8 +27,8 @@ class FloatParameter(BaseParameter):
 
     def get_typefunc(self):
         """Return float."""
-        return float
+        return float_with_none
 
     def get_argparse_type(self):
         """Return float."""
-        return float
+        return float_with_none

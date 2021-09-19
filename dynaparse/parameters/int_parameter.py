@@ -3,6 +3,8 @@ from dataclasses import dataclass
 
 from dynaparse.parameters.base_parameter import BaseParameter
 
+int_with_none = lambda x: None if x == "None" else int(x)
+
 
 @dataclass
 class IntParameter(BaseParameter):
@@ -21,8 +23,8 @@ class IntParameter(BaseParameter):
 
     def get_typefunc(self):
         """Return int."""
-        return int
+        return int_with_none
 
     def get_argparse_type(self):
         """Return int."""
-        return int
+        return int_with_none

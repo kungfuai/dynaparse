@@ -23,7 +23,7 @@ class BaseParameter:
 
     def cast(self, value):
         """Cast a value type 'int'."""
-        if value is None:
+        if value in [None, "None"]:
             return None
         try:
             return self.get_typefunc()(value)
