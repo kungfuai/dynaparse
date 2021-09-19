@@ -1,6 +1,10 @@
 name: build
 
-on: [push]
+on:
+  push:
+    branches: [ main ]
+  pull_request:
+    branches: [ main ]
 
 jobs:
   lint-and-test:
@@ -31,3 +35,4 @@ jobs:
         run: |
           pip install pytest
           python -m pytest tests -p no:warnings
+f
