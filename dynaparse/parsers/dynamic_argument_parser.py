@@ -1,3 +1,4 @@
+import argparse
 from argparse import ArgumentParser
 import sys
 from types import SimpleNamespace
@@ -17,12 +18,6 @@ class DynamicArgumentParser(ArgumentParser):
         self._dynamic_config = DynamicConfiguration()
         self._spec_file = self._get_command_line_value_from_arg("spec")
         self._config_file = self._get_command_line_value_from_arg("config")
-
-        if self._argument_conflicts_exist():
-            raise Exception(
-                "The following arguments are reserved for the DynamicArgumentParser: %s"
-                % (self._RESERVED_ARGS)
-            )
 
         self.add_argument(
             "--spec",
@@ -44,6 +39,15 @@ class DynamicArgumentParser(ArgumentParser):
         )
         self._check_for_dynamic_config()
 
+    def add_argument(self, *args, **kwargs):
+        try:
+            super().add_argument(*args, **kwargs)
+        except argparse.ArgumentError:
+            raise Exception(
+                "Can't add argument, conflict with reserved args: %s"
+                % (self._RESERVED_ARGS)
+            )
+
     def _get_command_line_value_from_arg(self, arg):
         """Return command line value from a specific argument name."""
         arg_str = "--" + arg
@@ -60,16 +64,6 @@ class DynamicArgumentParser(ArgumentParser):
             self._dynamic_config.load_config(self._config_file)
         self._dynamic_config.append_to_arg_parser(self)
         self._dynamic_config.patch_sys_argv()
-
-    def _get_existing_arg_names(self):
-        """Get names of arguments loaded as actions."""
-        return [a.dest for a in self._actions]
-
-    def _argument_conflicts_exist(self):
-        """Check that no arguments were supplied that conflict with reserved ones."""
-        existing = set(self._get_existing_arg_names())
-        reserved = set(self._RESERVED_ARGS)
-        return len(existing.intersection(reserved)) > 0
 
     def format_help(self):
         """Format help as usual, but append note about dynamic argument parser."""

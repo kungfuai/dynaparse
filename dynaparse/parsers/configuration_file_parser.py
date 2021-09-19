@@ -129,9 +129,7 @@ class ConfigurationFileParser:
         return flat_dict
 
     @classmethod
-    def _assign_nested_value_by_keys(
-        cls, output_dict, parent_keys, value, is_spec
-    ):
+    def _assign_nested_value_by_keys(cls, output_dict, parent_keys, value, is_spec):
         """Assign a value into a nested dict, creating keys as necessary."""
 
         def assign(current, remaining_keys):

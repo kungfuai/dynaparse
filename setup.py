@@ -20,7 +20,7 @@ install_requires = [
     "typeguard==2.10.0",
     "numpy==1.19.2",
     "pydantic==1.8",
-    "pyyaml==5.3.1",
+    "pyyaml==5.4",
 ]
 
 setup(
@@ -33,9 +33,7 @@ setup(
     ),
     url="https://github.com/kungfuai/dynaparse",
     packages=find_packages(),
-    entry_points={
-        "console_scripts": ["dynaparse = dynaparse.console:main"],
-    },
+    entry_points={"console_scripts": ["dynaparse = dynaparse.console:main"],},
     include_package_data=True,
     download_url="",
     install_requires=install_requires,

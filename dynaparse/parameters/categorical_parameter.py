@@ -2,6 +2,7 @@ import random
 from dataclasses import dataclass
 
 from dynaparse.parameters.base_parameter import BaseParameter
+from dynaparse.parameters.string_parameter import str_with_none
 
 
 @dataclass
@@ -12,6 +13,7 @@ class CategoricalParameter(BaseParameter):
 
     def __post_init__(self):
         """Post-initialization validation method."""
+        super().__post_init__()
         if self.default not in self.options:
             raise Exception(
                 "Default value '%s' not in options list '%s'"
@@ -37,4 +39,4 @@ class CategoricalParameter(BaseParameter):
 
     def get_argparse_type(self):
         """Return str."""
-        return str
+        return str_with_none

@@ -15,11 +15,15 @@ class BaseParameter:
             try:
                 check_type(parameter, getattr(self, parameter), field.type)
             except TypeError:
-                assert getattr(self, parameter) is None
+                if getattr(self, parameter) is not None:
+                    raise TypeError(
+                        "Parameter '%s' (value: '%s') type invalid, should be '%s'"
+                        % (parameter, str(getattr(self, parameter)), str(field.type))
+                    )
 
     def cast(self, value):
         """Cast a value type 'int'."""
-        if value is None:
+        if value in [None, "None"]:
             return None
         try:
             return self.get_typefunc()(value)
