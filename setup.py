@@ -17,15 +17,15 @@ classifiers = [
 ]
 
 install_requires = [
-    "typeguard==2.10.0,<3",
-    "numpy==1.19.2,<2",
-    "pydantic==1.8.2,<2",
-    "pyyaml==5.4,<6",
+    "typeguard>=2.5,<3",
+    "numpy>=1.15.0,<2",
+    "pydantic>=1.0,<2",
+    "pyyaml>=3.13,<7",
 ]
 
 setup(
     name="dynaparse",
-    version="0.1a2",
+    version="0.1a3",
     author="KUNGFU.AI",
     author_email="michael@kungfu.ai",
     description=(
@@ -33,7 +33,9 @@ setup(
     ),
     url="https://github.com/kungfuai/dynaparse",
     packages=find_packages(),
-    entry_points={"console_scripts": ["dynaparse = dynaparse.console:main"],},
+    entry_points={
+        "console_scripts": ["dynaparse = dynaparse.console:main"],
+    },
     include_package_data=True,
     download_url="",
     install_requires=install_requires,
