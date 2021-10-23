@@ -15,9 +15,11 @@ class DynamicArgumentParser(ArgumentParser):
         """Initialize new arg parser with dynamic args taken into account."""
         super().__init__(*args, **kwargs)
 
-        self._dynamic_config = DynamicConfiguration()
         self._spec_file = self._get_command_line_value_from_arg("spec")
         self._config_file = self._get_command_line_value_from_arg("config")
+        self._dynamic_config = DynamicConfiguration(
+            config=self._config_file, spec=self._spec_file
+        )
 
         self.add_argument(
             "--spec",
@@ -37,7 +39,6 @@ class DynamicArgumentParser(ArgumentParser):
             default=False,
             help="If True, generate random parameters from the specified dynamic configuration.",
         )
-        self._check_for_dynamic_config()
 
     def add_argument(self, *args, **kwargs):
         try:
@@ -48,6 +49,31 @@ class DynamicArgumentParser(ArgumentParser):
                 % (self._RESERVED_ARGS)
             )
 
+    def append_config(self, config):
+        """Append a new config to the existing configuration. Accepts all inputs that a dynamic configuration accepts."""
+        other_dynamic_config = DynamicConfiguration(config=config)
+        self._dynamic_config.merge_with(other_dynamic_config, inplace=True)
+
+    def parse_args(self):
+        """Parse all arguments including dynamic configuration-based ones."""
+        self._merge_dynamic_config_into_argparser()
+        args = super().parse_args()
+
+        if args.config is not None:
+            self._dynamic_config.overwrite_args_with_contents(args)
+        if args.random_sample:
+            self._dynamic_config.overwrite_args_with_random(args)
+        if self._dynamic_config.has_spec():
+            self._dynamic_config.validate_args(args)
+
+        return self._patch_kwargs(args)
+
+    def format_help(self):
+        """Format help as usual, but append note about dynamic argument parser."""
+        help_str = super().format_help()
+        help_str += "\nNOTE: This script uses a dynamic argument parser for configuration.\nSee https://github.com/kungfuai/dynaparse for more information.\n"
+        return help_str
+
     def _get_command_line_value_from_arg(self, arg):
         """Return command line value from a specific argument name."""
         arg_str = "--" + arg
@@ -56,20 +82,10 @@ class DynamicArgumentParser(ArgumentParser):
                 return sys.argv[i + 1]
         return None
 
-    def _check_for_dynamic_config(self):
+    def _merge_dynamic_config_into_argparser(self):
         """Append arguments for a dynamic configuration."""
-        if self._spec_file is not None:
-            self._dynamic_config.load_spec(self._spec_file)
-        if self._config_file is not None:
-            self._dynamic_config.load_config(self._config_file)
         self._dynamic_config.append_to_arg_parser(self)
         self._dynamic_config.patch_sys_argv()
-
-    def format_help(self):
-        """Format help as usual, but append note about dynamic argument parser."""
-        help_str = super().format_help()
-        help_str += "\nNOTE: This script uses a dynamic argument parser for configuration.\nSee https://github.com/kungfuai/dynaparse for more information.\n"
-        return help_str
 
     def _patch_kwargs(self, args):
         """Patch kwargs in an argparse namespace so that nested values are accessible via dot notation."""
@@ -97,16 +113,3 @@ class DynamicArgumentParser(ArgumentParser):
                 delattr(args, arg_full_name)
 
         return args
-
-    def parse_args(self):
-        """Parse all arguments including dynamic configuration-based ones."""
-        args = super().parse_args()
-
-        if args.config is not None:
-            self._dynamic_config.overwrite_args_with_contents(args)
-        if args.random_sample:
-            self._dynamic_config.overwrite_args_with_random(args)
-        if self._dynamic_config.has_spec():
-            self._dynamic_config.validate_args(args)
-
-        return self._patch_kwargs(args)
