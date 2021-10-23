@@ -43,16 +43,16 @@ Next, follow these steps to get familiar with the workflow:
 - Change the categorical parameter's `parameter_type` from `str` to `categorical`
 - Add another key in this parameter's dict: `"options": ["option1", "option2", "option3"]`
 
-3. `python examples/script.py --help` (notice the three special arguments added)
-4. `python examples/script.py --spec _spec_auto.json --help`
-5. `python examples/script.py --spec _spec_auto.json`
+3. `python -m examples.script --help` (notice the three special arguments added)
+4. `python -m examples.script --spec _spec_auto.json --help`
+5. `python -m examples.script --spec _spec_auto.json`
 
 - Notice that programmatically, you can access these parsed args with dot notation, e.g. `nested_section.int_parameter_1`
 
 6. Change some values in `_config_auto.json`
-7. `python examples/script.py --spec _spec_auto.json --config _config_auto.json`
-8. `python examples/script.py --spec _spec_auto.json --nested_section.int_parameter_1 999`
-9. `python examples/script.py --spec _spec_auto.json --categorical_parameter_1 option1`
-10. `python examples/script.py --spec _spec_autho.json --categorical_parameter_1 option4`
+7. `python -m examples.script --spec _spec_auto.json --config _config_auto.json`
+8. `python -m examples.script --spec _spec_auto.json --nested_section.int_parameter_1 999`
+9. `python -m examples.script --spec _spec_auto.json --categorical_parameter_1 option1`
+10. `python -m examples.script --spec _spec_auto.json --categorical_parameter_1 option4`
 
 - This should throw an error, as expected (`option4` not in the options list we added previously)

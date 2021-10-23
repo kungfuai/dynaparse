@@ -1,7 +1,6 @@
 import json
 import os
 import sys
-import warnings
 
 from dynaparse.parsers.configuration_file_parser import ConfigurationFileParser
 from dynaparse.parsers.class_model_parser import ClassModelParser
@@ -19,12 +18,13 @@ class DynamicConfiguration:
         """Instantiate new dynamic configuration object."""
         self.config = config
         self.spec = spec
+        self._raw_schema = {}
         self._schema = {}
         self._values = {}
         if self.spec is not None:
-            self.load_spec(self.spec)
+            self._load_spec(self.spec)
         if self.config is not None:
-            self.load_config(self.config)
+            self._load_config(self.config)
 
     def has_spec(self):
         """Return whether schema are loaded."""
@@ -65,26 +65,6 @@ class DynamicConfiguration:
         else:
             raise Exception("Parameter name '%s' not recognized in schema" % (name))
 
-    def load_config(self, spec):
-        """Load values and schema from a given spec."""
-        is_file = False
-        if isinstance(spec, str) and os.path.isfile(spec):
-            is_file = True
-            raw_data = ConfigurationFileParser.load_flat_config(spec)
-        else:
-            nested_data = ClassModelParser(spec).to_dict()
-            raw_data = ConfigurationFileParser._flatten_nested_structure(nested_data)
-        if self.spec is None:
-            warnings.warn("No spec file specified, inferring from '%s'" % (spec))
-            if is_file:
-                self._raw_schema = SchemaBuilder.infer_from_config_file(spec)
-            else:
-                self._raw_schema = SchemaBuilder.infer_from_flat_config(raw_data)
-            for parameter_name, parameter_dict in self._raw_schema.items():
-                self._append_parameter_from_dict(parameter_name, parameter_dict)
-        for value_name, value in raw_data.items():
-            self.set_value(value_name, value)
-
     def save_config(self, filename):
         """Save configuration values to a file."""
         with open(filename, "w") as fd:
@@ -102,7 +82,51 @@ class DynamicConfiguration:
         with open(filename, "w") as fd:
             json.dump(expanded, fd, indent=4)
 
-    def load_spec(self, filename):
+    def merge_with(self, other_dynamic_config, inplace=False):
+        """Merge another dynamic config with this one.
+        
+        If names are duplicated, the new dynamic config will overwrite this one.
+        """
+        if inplace:
+            new_dynamic_config = self
+        else:
+            new_dynamic_config = DynamicConfiguration()
+        new_dynamic_config._raw_schema = {
+            **self._raw_schema,
+            **other_dynamic_config._raw_schema,
+        }
+        new_dynamic_config._schema = {
+            **self._schema,
+            **other_dynamic_config._schema,
+        }
+        new_dynamic_config._values = {
+            **self._values,
+            **other_dynamic_config._values,
+        }
+        return new_dynamic_config
+
+    def _load_config(self, spec):
+        """Load values and schema from a given spec."""
+        is_file = False
+        if isinstance(spec, str) and os.path.isfile(spec):
+            is_file = True
+            raw_data = ConfigurationFileParser.load_flat_config(spec)
+        elif isinstance(spec, dict):
+            raw_data = ConfigurationFileParser._flatten_nested_structure(spec)
+        else:
+            nested_data = ClassModelParser(spec).to_dict()
+            raw_data = ConfigurationFileParser._flatten_nested_structure(nested_data)
+        if self.spec is None:
+            if is_file:
+                self._raw_schema = SchemaBuilder.infer_from_config_file(spec)
+            else:
+                self._raw_schema = SchemaBuilder.infer_from_flat_config(raw_data)
+            for parameter_name, parameter_dict in self._raw_schema.items():
+                self._append_parameter_from_dict(parameter_name, parameter_dict)
+        for value_name, value in raw_data.items():
+            self.set_value(value_name, value)
+
+    def _load_spec(self, filename):
         """Load schema from a directory."""
         self.spec = filename
         self._raw_schema = ConfigurationFileParser.load_flat_spec(filename)
