@@ -2,6 +2,8 @@ from argparse import ArgumentDefaultsHelpFormatter
 
 from dynaparse import DynamicArgumentParser
 
+from examples.config_composable import ExperimentConfig
+
 
 class ExampleScriptArgumentParser(DynamicArgumentParser):
     """Example argument parser for a script."""
@@ -22,5 +24,6 @@ class ExampleScriptArgumentParser(DynamicArgumentParser):
 
 
 parser = ExampleScriptArgumentParser()
+parser.add_config(ExperimentConfig())  # Added control to modify arguments
 print("PARSED ARGUMENTS:")
 print(parser.parse_args())
