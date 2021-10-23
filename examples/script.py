@@ -24,6 +24,6 @@ class ExampleScriptArgumentParser(DynamicArgumentParser):
 
 
 parser = ExampleScriptArgumentParser()
-parser.add_config(ExperimentConfig())  # Added control to modify arguments
+parser.append_config(ExperimentConfig())  # Added control to modify arguments
 print("PARSED ARGUMENTS:")
 print(parser.parse_args())
