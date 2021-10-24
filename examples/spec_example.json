@@ -12,7 +12,8 @@
     "help": "Help for categorical parameter 1",
     "required": true,
     "default": "option1",
-    "parameter_type": "str"
+    "parameter_type": "categorical",
+    "options": ["option1", "option2"]
   },
   {
     "name": "float_parameter_1",
