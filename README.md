@@ -1,10 +1,10 @@
 # dynaparse
 
-<p align="center">
-  <img src="./docs/img/dynaparse-diagram.png" width=250 />
-</p>
-
 Enable dynamic configuration of scripts, especially for machine learning applications. In most cases, the "core pipeline" is a training pipeline and the "modular components" are ML models.
+
+<p align="center">
+  <img src="./docs/img/dynaparse-diagram.png" width=400 />
+</p>
 
 **Note: `dynaparse` is in alpha release for initial testing and is not guaranteed stable.**
 
