@@ -24,6 +24,6 @@ class ExampleScriptArgumentParser(DynamicArgumentParser):
 
 
 parser = ExampleScriptArgumentParser()
-parser.append_config(ExperimentConfig())  # Added control to modify arguments
+# parser.append_config(ExperimentConfig())  # Append pydantic BaseModel classes as-needed
 print("PARSED ARGUMENTS:")
 print(parser.parse_args())

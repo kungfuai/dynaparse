@@ -25,13 +25,13 @@ class DynamicArgumentParser(ArgumentParser):
             "--spec",
             type=str,
             default=None,
-            help="Dynamic configuration spec file specifying metadata for variable named arguments",
+            help="Dynamic configuration spec file specifying metadata for dynamic named arguments. Loads default values unless config file overrides.",
         )
         self.add_argument(
             "--config",
             type=str,
             default=None,
-            help="File specifying values following the schema in 'spec'. These will override command line args if specified.",
+            help="File specifying values following the schema in 'spec'. Command line args will override these values.",
         )
         self.add_argument(
             "--random_sample",
