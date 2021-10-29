@@ -99,12 +99,14 @@ class TestDynamicArgumentParser(unittest.TestCase):
         can be used override a nested config object:
             config_object.optimizer.lr = 0.1
         """
+        sys.argv = ["script.sh", "--component.height", "5"]
         config_obj = ConfigClassExample()
         parser = DynamicArgumentParser()
         parser.append_config(config_obj)
         args = parser.parse_args()
         assert "--component.component1.size" in parser.format_help()
         assert args.component.component1.size == config_obj.component.component1.size
+        assert args.component.height == 5
 
     def test_parse_args_when_cmdline_override(self):
         sys.argv = [
