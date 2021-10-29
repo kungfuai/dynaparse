@@ -93,10 +93,11 @@ class TestDynamicArgumentParser(unittest.TestCase):
 
     def test_parse_args_when_cmdline_override_class_config(self):
         """
-        A command like: "script.sh --optimizer.lr 0.1"
-        should override a nested config object, to the effect of:
-
-            config_object.optimizier.lr = 0.1
+        When the parser is appended a class-based config object,
+        it should add arugments for the nested fields, so that a command like:
+            "script.sh --optimizer.lr 0.1"
+        can be used override a nested config object:
+            config_object.optimizer.lr = 0.1
         """
         config_obj = ConfigClassExample()
         parser = DynamicArgumentParser()
