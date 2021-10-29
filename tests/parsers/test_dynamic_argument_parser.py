@@ -4,6 +4,7 @@ import unittest
 import sys
 
 from dynaparse import DynamicArgumentParser
+from tests.data.config_class_example import ConfigClassExample
 
 SYS_ARGV = sys.argv
 
@@ -89,6 +90,20 @@ class TestDynamicArgumentParser(unittest.TestCase):
         assert args.nested_section.str_parameter_1 == "test"
         assert args.random_sample is False
         assert args.spec == "tests/data/spec_example.json"
+
+    def test_parse_args_when_cmdline_override_class_config(self):
+        """
+        A command like: "script.sh --optimizer.lr 0.1"
+        should override a nested config object, to the effect of:
+
+            config_object.optimizier.lr = 0.1
+        """
+        config_obj = ConfigClassExample()
+        parser = DynamicArgumentParser()
+        parser.append_config(config_obj)
+        args = parser.parse_args()
+        assert "--component.component1.size" in parser.format_help()
+        assert args.component.component1.size == config_obj.component.component1.size
 
     def test_parse_args_when_cmdline_override(self):
         sys.argv = [
