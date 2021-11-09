@@ -1,3 +1,4 @@
+import enum
 from dynaparse.parsers.configuration_file_parser import ConfigurationFileParser
 from dynaparse.parameters.boolean_parameter import BooleanParameter
 from dynaparse.parameters.categorical_parameter import CategoricalParameter
@@ -7,18 +8,21 @@ from dynaparse.parameters.list_parameter import ListParameter
 from dynaparse.parameters.string_parameter import StringParameter
 
 
+NO_HELP_CONFIGURED_STR = ""  # "(NO HELP CONFIGURED)"
+
+
 class SchemaBuilder:
     @classmethod
     def _get_parameter_dict_for_value(cls, name, value):
         """Get a parameter dict given a static value."""
         if isinstance(value, bool):
             param = BooleanParameter(
-                name=name, help="(NO HELP CONFIGURED)", required=True, default=value
+                name=name, help=NO_HELP_CONFIGURED_STR, required=True, default=value
             )
         elif isinstance(value, int):
             param = IntParameter(
                 name=name,
-                help="(NO HELP CONFIGURED)",
+                help=NO_HELP_CONFIGURED_STR,
                 required=True,
                 default=value,
                 p1=value,
@@ -27,7 +31,7 @@ class SchemaBuilder:
         elif isinstance(value, float):
             param = FloatParameter(
                 name=name,
-                help="(NO HELP CONFIGURED)",
+                help=NO_HELP_CONFIGURED_STR,
                 required=True,
                 default=value,
                 p1=value,
@@ -35,20 +39,27 @@ class SchemaBuilder:
             )
         elif isinstance(value, str):
             param = StringParameter(
-                name=name, help="(NO HELP CONFIGURED)", required=True, default=value
+                name=name, help=NO_HELP_CONFIGURED_STR, required=True, default=value
             )
         elif isinstance(value, list):
             value_type = cls._get_value_type_from_list(value)
             param = ListParameter(
                 name=name,
-                help="(NO HELP CONFIGURED)",
+                help=NO_HELP_CONFIGURED_STR,
                 required=True,
                 default=value,
                 value_type=value_type,
             )
         elif isinstance(value, type(None)):
             param = StringParameter(
-                name=name, help="(NO HELP CONFIGURED)", required=True, default=None
+                name=name, help=NO_HELP_CONFIGURED_STR, required=True, default=None
+            )
+        elif isinstance(value, enum.Enum):
+            param = StringParameter(
+                name=name,
+                help=NO_HELP_CONFIGURED_STR,
+                required=True,
+                default=str(value.value),
             )
         else:
             raise Exception(
